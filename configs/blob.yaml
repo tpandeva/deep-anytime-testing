@@ -1,0 +1,29 @@
+defaults:
+  - _self_
+  - override hydra/job_logging: colorlog
+  - override hydra/hydra_logging: colorlog
+seed: 1
+data:
+  samples: 90
+  type: "type2"
+model:
+  input_size: 4
+  hidden_layer_size: [10,10,10]
+  output_size: 1
+  batch_norm: True
+  drop_out:
+    flag: False
+    p: 0.5
+train:
+  lr: 0.0001
+  patience: 10
+  delta: 0.0
+  epochs: 100
+  seqs: 40 # number of batches
+  bootstraps: 1
+heuristic: "none" # cpd is for heuristic and none for no
+threshold: 1 #Tau
+alpha: 0.05
+dk: "max_all" # type of heuristic
+type: "none" # default dont change
+T: 20 #Warm start
