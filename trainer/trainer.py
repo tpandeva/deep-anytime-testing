@@ -37,10 +37,10 @@ class Trainer:
         for z in train_loader:
             z = z.to(self.device)
             tau_z = self.operator.compute(z)
-            #z = torch.transpose(z, 1, 2).reshape(-1, 2 * self.operator.p)
-            #tau_z = torch.transpose(tau_z, 1, 2).reshape(-1, 2 * self.operator.p)
+            z = torch.transpose(z, 1, 2).reshape(-1, 2 * self.operator.p)
+            tau_z = torch.transpose(tau_z, 1, 2).reshape(-1, 2 * self.operator.p)
 
-            out = self.net(z[:,:,0], tau_z[:,:,0])
+            out = self.net(z, tau_z)
             loss = -out.mean()
             mmde_train = torch.exp(out.sum() / 2)
             self.log({"train_eval": mmde_train.item(), "train_loss": loss.item()})
@@ -53,9 +53,9 @@ class Trainer:
         for z in loader:
             z = z.to(self.device)
             tau_z = self.operator.compute(z)
-            #z = torch.transpose(z, 1, 2).reshape(-1, 2 * self.operator.p)
-            #tau_z = torch.transpose(tau_z, 1, 2).reshape(-1, 2 * self.operator.p)
-            out = self.net(z[:,:,0], tau_z[:,:,0]).detach()
+            z = torch.transpose(z, 1, 2).reshape(-1, 2 * self.operator.p)
+            tau_z = torch.transpose(tau_z, 1, 2).reshape(-1, 2 * self.operator.p)
+            out = self.net(z, tau_z).detach()
             loss = -out.mean()
             mmde = torch.exp(out.sum() / 2)
             self.log({f"{mode}_eval": mmde.item(), f"{mode}_loss": loss.item()})

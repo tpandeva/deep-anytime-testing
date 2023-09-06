@@ -10,7 +10,7 @@ data:
   d: 2
   rho: 0.03
 model:
-  input_size: 2
+  input_size: 4
   hidden_layer_size: [10,10, 10]
   output_size: 1
   batch_norm: True
