@@ -43,7 +43,13 @@ class MLP(nn.Module):
         return self.model(x)
 
 class MMDEMLP(MLP):
-    def __init__(self,input_size, hidden_layer_size, output_size, batch_norm, drop_out, p):
+    def __init__(self,cfg): #input_size, hidden_layer_size, output_size, batch_norm, drop_out, p
+        input_size = cfg.input_size
+        hidden_layer_size = cfg.hidden_layer_size
+        output_size = cfg.output_size
+        batch_norm = cfg.batch_norm
+        drop_out = cfg.drop_out.flag
+        p = cfg.drop_out.p
         super(MMDEMLP, self).__init__(input_size, hidden_layer_size, output_size, batch_norm, drop_out, p)
         self.f = torch.nn.Tanh()
     def forward(self, x,y):

@@ -6,6 +6,7 @@ import pickle
 from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import DataLoader
 import wandb
+from operators import RotateOperator
 
 from data import BlobData
 from models import MMDEMLP, EarlyStopper
@@ -34,7 +35,7 @@ def train(cfg: DictConfig):
     seqs = cfg.train.seqs
     bootstraps = cfg.train.bootstraps
     stats = np.zeros((bootstraps, seqs))
-
+    operator = RotateOperator(p=cfg.operator.p)
     for seed in range(bootstraps):
         torch.manual_seed(seed)
         np.random.seed(seed)
@@ -49,11 +50,12 @@ def train(cfg: DictConfig):
             train_loader = DataLoader(train_data, batch_size=samples, shuffle=True)
 
             for t in range(epochs):
-                net.train()
                 for x, y in train_loader:
                     x, y = x.to(device), y.to(device)
-                    z = torch.concat((x, y), dim=1)
-                    tau_z = torch.concat((y, x), dim=1)
+                    z = torch.stack([x,y], dim=2)
+                    tau_z = operator.compute(z)
+                    z = torch.transpose(z, 1, 2).reshape(-1, 2 * operator.p)
+                    tau_z = torch.transpose(tau_z, 1, 2).reshape(-1, 2 * operator.p)
                     out = net(z, tau_z)
                     loss = -out.mean()
                     mmde_train = torch.exp(out.sum()/2)

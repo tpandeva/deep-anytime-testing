@@ -3,6 +3,7 @@ import numpy as np
 import itertools
 from torch.utils.data import Dataset
 import torch
+from .datagen import DataGenerator
 def sample_D_blobs(N, sigma_mx_2, r=3, d=2, rho=0.03, rs=None):
     """
     Generate Blob-D for testing type-II error (or test power).
@@ -50,7 +51,7 @@ def sample_D_blobs(N, sigma_mx_2, r=3, d=2, rho=0.03, rs=None):
 
 
 class BlobData(Dataset):
-    def __init__(self, type, samples, seed):
+    def __init__(self, type, samples, r=3, d=2, rho=0.03,seed = 0):
         sigma_mx_2_standard = np.array([[0.03, 0], [0, 0.03]])
         sigma_mx_2 = np.zeros([9, 2, 2])
         for i in range(9):
@@ -65,7 +66,7 @@ class BlobData(Dataset):
                 sigma_mx_2[i][1, 0] = 0.02 + 0.002 * (i - 5)
                 sigma_mx_2[i][0, 1] = 0.02 + 0.002 * (i - 5)
         if type == "type2":
-            X, Y = sample_D_blobs(samples, sigma_mx_2, rs=seed)
+            X, Y = sample_D_blobs(samples, sigma_mx_2, r, d, rho, rs=seed)
             X = torch.from_numpy(X)
             Y = torch.from_numpy(Y)
         elif type == "type11":
@@ -80,9 +81,17 @@ class BlobData(Dataset):
             Y = torch.from_numpy(Z)
         self.x = X.float()
         self.y = Y.float()
+        self.z = torch.stack([self.x, self.y], dim=2)
 
     def __len__(self):
         return self.x.shape[0]
 
     def __getitem__(self, idx):
-        return self.x[idx], self.y[idx]
+        return self.z[idx]
+
+class BlobDataGen(DataGenerator):
+    def __init__(self, config):
+        super(BlobDataGen, self).__init__(config)
+    def generate(self, seed) ->Dataset:
+        return BlobData(self.data_config.type, self.data_config.samples,self.data_config.r, self.data_config.d,
+                        self.data_config.rho, seed)

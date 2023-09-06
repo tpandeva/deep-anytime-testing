@@ -4,26 +4,35 @@ defaults:
   - override hydra/hydra_logging: colorlog
 seed: 1
 data:
-  samples: 90
+  samples: 900
   type: "type2"
+  r: 3
+  d: 2
+  rho: 0.03
 model:
-  input_size: 4
-  hidden_layer_size: [10,10,10]
+  input_size: 2
+  hidden_layer_size: [10,10, 10]
   output_size: 1
   batch_norm: True
   drop_out:
     flag: False
     p: 0.5
 train:
-  lr: 0.0001
-  patience: 10
+  lr: 0.001
+  patience: 50
   delta: 0.0
-  epochs: 100
-  seqs: 40 # number of batches
+  epochs: 1000
+  seqs: 1 # number of batches
   bootstraps: 1
-heuristic: "none" # cpd is for heuristic and none for no
-threshold: 1 #Tau
-alpha: 0.05
-dk: "max_all" # type of heuristic
-type: "none" # default dont change
-T: 20 #Warm start
+  T: 20 #Warm start
+  alpha: 0.05
+  batch_size: 900
+operator:
+  type: "rotation"
+  p: "${data.d}"
+  d: 0
+#heuristic: "none" # cpd is for heuristic and none for no
+#threshold: 1 #Tau
+#alpha: 0.05
+#dk: "max_all" # type of heuristic
+#type: "none" # default dont change

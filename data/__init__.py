@@ -1,1 +1,1 @@
-from .blob import BlobData
+from .blob import BlobData, BlobDataGen

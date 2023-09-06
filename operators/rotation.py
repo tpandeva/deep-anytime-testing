@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from base import Operator
+from .base import Operator
 
 class RotateOperator(Operator):
     """
@@ -21,13 +21,13 @@ class RotateOperator(Operator):
         self.d = 0 if d is None else d
 
         # Rotation (swap) matrix
-        self.Tau = nn.Parameter(torch.tensor([[0, 1], [1, 0]]), requires_grad=False)
+        self.Tau = nn.Parameter(torch.tensor([[0., 1.], [1., 0.]]), requires_grad=False)
 
         # Construct the mask
         self.mask = nn.Parameter(torch.zeros(2, p), requires_grad=False)
         self.mask[:, self.d:] = 1
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def compute(self, x: torch.Tensor) -> torch.Tensor:
         """
         Apply the rotation operation on the tensor.
 
@@ -37,14 +37,11 @@ class RotateOperator(Operator):
         Returns:
         - torch.Tensor: Tensor after applying rotation operation.
         """
-        if x.dim() != 2:
+        if x.dim() != 3:
             raise ValueError(f"Expected input tensor of 2 dimensions, but got {x.dim()}.")
-
-        if x.size(0) != 2:
-            raise ValueError(f"Expected input tensor first dimension to be 2, but got {x.size(0)}.")
 
         if x.size(1) != self.p:
             raise ValueError(f"Expected input tensor second dimension to be {self.p}, but got {x.size(1)}.")
 
         # Apply rotation using masking
-        return (1 - self.mask) * x + self.mask * (self.Tau @ x)
+        return (1 - self.mask) * x + self.mask * (x @ self.Tau)

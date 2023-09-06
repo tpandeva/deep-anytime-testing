@@ -17,3 +17,6 @@ class EarlyStopper:
             if self.counter >= self.patience:
                 return True
         return False
+
+    def reset(self):
+        self.counter=0
