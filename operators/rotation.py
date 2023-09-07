@@ -24,15 +24,15 @@ class RotateOperator(Operator):
         self.Tau = nn.Parameter(torch.tensor([[0., 1.], [1., 0.]]), requires_grad=False)
 
         # Construct the mask
-        self.mask = nn.Parameter(torch.zeros(2, p), requires_grad=False)
-        self.mask[:, self.d:] = 1
+        self.mask = nn.Parameter(torch.zeros(p, 2), requires_grad=False)
+        self.mask[self.d:, :] = 1
 
     def compute(self, x: torch.Tensor) -> torch.Tensor:
         """
         Apply the rotation operation on the tensor.
 
         Parameters:
-        - x (torch.Tensor): Input tensor of shape [2, p].
+        - x (torch.Tensor): Input tensor of shape [batch_size, p, 2].
 
         Returns:
         - torch.Tensor: Tensor after applying rotation operation.

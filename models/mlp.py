@@ -14,7 +14,7 @@ class MLP(nn.Module):
         layers = []
         in_features = input_size
 
-        # Add hidden layers with optional batch normalization
+        # Add hidden layers with optional batch normalization and drop out
         if isinstance(hidden_layer_size, (list, ListConfig)):
             for out_features in hidden_layer_size:
                 layers.append(nn.Linear(in_features, out_features))
@@ -42,20 +42,60 @@ class MLP(nn.Module):
         """
         return self.model(x)
 
+
 class MMDEMLP(MLP):
-    def __init__(self,cfg): #input_size, hidden_layer_size, output_size, batch_norm, drop_out, p
+    """
+    MMDEMLP (Modified Mean Discrepancy MLP) is an extension of the base MLP (Multi-Layer Perceptron).
+
+    This class takes in a configuration object `cfg` that specifies the parameters for the neural network.
+    The forward method implements a custom operation over the outputs of the base MLP.
+    """
+
+    def __init__(self, cfg):
+        """
+        Initializes the MMDEMLP object.
+
+        Parameters:
+        - cfg (object): A configuration object that has attributes -
+            - input_size (int): Size of input layer.
+            - hidden_layer_size (int): Size of hidden layer.
+            - output_size (int): Size of output layer.
+            - batch_norm (bool): Indicates if batch normalization should be applied.
+            - drop_out.flag (bool): Indicates if dropout should be applied.
+            - drop_out.p (float): The probability of an element to be zeroed.
+        """
+
+        # Extract configuration parameters
         input_size = cfg.input_size
         hidden_layer_size = cfg.hidden_layer_size
         output_size = cfg.output_size
         batch_norm = cfg.batch_norm
         drop_out = cfg.drop_out.flag
         p = cfg.drop_out.p
-        super(MMDEMLP, self).__init__(input_size, hidden_layer_size, output_size, batch_norm, drop_out, p)
-        self.f = torch.nn.Tanh()
-    def forward(self, x,y):
 
-        x_l = self.model(x)
-        y_l = self.model(y)
-        g = self.f(x_l-y_l)
-        output = 2*torch.log(1+g)
+        # Initialize base MLP
+        super(MMDEMLP, self).__init__(input_size, hidden_layer_size, output_size, batch_norm, drop_out, p)
+
+        # Activation function for the custom operation in the forward method
+        self.sigma = torch.nn.Tanh()
+
+    def forward(self, x, y) -> torch.Tensor:
+        """
+        Forward pass for the MMDEMLP model. Computes the output based on inputs x and y.
+
+        Parameters:
+        - x (torch.Tensor): First input tensor.
+        - y (torch.Tensor): Second input tensor.
+
+        Returns:
+        - output (torch.Tensor): The output of the forward pass.
+        """
+
+        # Compute the outputs from the base MLP model for x and y
+        g_x = self.model(x)
+        g_y = self.model(y)
+
+        # Compute final output
+        output = 2 * torch.log(1 + self.sigma(g_x - g_y))
+
         return output

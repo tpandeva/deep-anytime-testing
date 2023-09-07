@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-import torch.nn as nn
 import torch
+
 class Operator(ABC):
     def __init__(self):
         super().__init__()

@@ -50,11 +50,11 @@ def sample_D_blobs(N, sigma_mx_2, r=3, d=2, rho=0.03, rs=None):
 # X, Y = sample_blobs_Q(N, sigma_mx_2)
 
 
-class BlobData(Dataset):
-    def __init__(self, type, samples, r=3, d=2, rho=0.03,seed = 0):
+class BlobData(Dataset): # TODO: the code works for only for two dimensions (d=2)
+    def __init__(self, type, samples, r=3, d=2, rho=0.03, with_labels = False, seed = 0):
         sigma_mx_2_standard = np.array([[0.03, 0], [0, 0.03]])
-        sigma_mx_2 = np.zeros([9, 2, 2])
-        for i in range(9):
+        sigma_mx_2 = np.zeros([r**d, 2, 2])
+        for i in range(r**d):
             sigma_mx_2[i] = sigma_mx_2_standard
             if i < 4:
                 sigma_mx_2[i][0, 1] = -0.02 - 0.002 * i
@@ -81,6 +81,9 @@ class BlobData(Dataset):
             Y = torch.from_numpy(Z)
         self.x = X.float()
         self.y = Y.float()
+        if with_labels:
+            self.x = torch.concat((X.float(), torch.ones((X.shape[0], 1))), dim=1)
+            self.y = torch.concat((Y.float(), torch.zeros((Y.shape[0], 1))), dim=1)
         self.z = torch.stack([self.x, self.y], dim=2)
 
     def __len__(self):
@@ -94,4 +97,4 @@ class BlobDataGen(DataGenerator):
         super(BlobDataGen, self).__init__(config)
     def generate(self, seed) ->Dataset:
         return BlobData(self.data_config.type, self.data_config.samples,self.data_config.r, self.data_config.d,
-                        self.data_config.rho, seed)
+                        self.data_config.rho, self.data_config.with_labels, seed)

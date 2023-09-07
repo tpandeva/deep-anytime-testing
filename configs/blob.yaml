@@ -6,12 +6,13 @@ seed: 1
 data:
   samples: 900
   type: "type2"
-  r: 3
-  d: 2
-  rho: 0.03
+  r: 3 # blobs per axis, DON'T CHANGE FOR NOW
+  d: 2 # number of axes, DON'T CHANGE FOR NOW
+  rho: 0.03 # std dev for the second class
+  with_labels: True
 model:
-  input_size: 4
-  hidden_layer_size: [10,10, 10]
+  input_size: 6
+  hidden_layer_size: [10,10,10]
   output_size: 1
   batch_norm: True
   drop_out:
@@ -22,15 +23,15 @@ train:
   patience: 50
   delta: 0.0
   epochs: 1000
-  seqs: 1 # number of batches
+  seqs: 1 # number of mini-batches
   bootstraps: 1
   T: 20 #Warm start
   alpha: 0.05
   batch_size: 900
 operator:
   type: "rotation"
-  p: "${data.d}"
-  d: 0
+  p: 3
+  d: 2
 #heuristic: "none" # cpd is for heuristic and none for no
 #threshold: 1 #Tau
 #alpha: 0.05
