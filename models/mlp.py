@@ -56,22 +56,13 @@ class MMDEMLP(MLP):
         Initializes the MMDEMLP object.
 
         Parameters:
-        - cfg (object): A configuration object that has attributes -
-            - input_size (int): Size of input layer.
-            - hidden_layer_size (int): Size of hidden layer.
-            - output_size (int): Size of output layer.
-            - batch_norm (bool): Indicates if batch normalization should be applied.
-            - drop_out.flag (bool): Indicates if dropout should be applied.
-            - drop_out.p (float): The probability of an element to be zeroed.
+        - input_size (int): Size of input layer.
+        - hidden_layer_size (int): Size of hidden layer.
+        - output_size (int): Size of output layer.
+        - batch_norm (bool): Indicates if batch normalization should be applied.
+        - drop_out(bool): Indicates if dropout should be applied.
+        - drop_out_p (float): The probability of an element to be zeroed.
         """
-
-        # Extract configuration parameters
-        # input_size = cfg.input_size
-        # hidden_layer_size = cfg.hidden_layer_size
-        # output_size = cfg.output_size
-        # batch_norm = cfg.batch_norm
-        # drop_out = cfg.drop_out.flag
-        # drop_out_p = cfg.drop_out.p
 
         # Initialize base MLP
         super(MMDEMLP, self).__init__(input_size, hidden_layer_size, output_size, batch_norm, drop_out, drop_out_p)
