@@ -3,7 +3,7 @@
 1. Setup the environment and install packages
 ```
 python3 -m venv my_env #  conda create --name my_env (if you use conda)
-source env/bin/activate # conda activate my_env
+source my_env/bin/activate # conda activate my_env
 pip install -r requirements.txt
 ```
 
