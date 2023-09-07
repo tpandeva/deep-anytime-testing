@@ -4,11 +4,9 @@ import hydra
 from trainer import Trainer
 from omegaconf import DictConfig, OmegaConf
 import wandb
-from operators import RotateOperator
-from data import BlobDataGen
-from models import MMDEMLP
+from hydra.utils import instantiate
 
-@hydra.main(config_path='configs', config_name='blob.yaml')
+@hydra.main(config_path='configs', config_name='config.yaml')
 def train_pipeline(cfg: DictConfig):
     # set seed
     torch.manual_seed(cfg.seed)
@@ -17,21 +15,21 @@ def train_pipeline(cfg: DictConfig):
     wandb.config = OmegaConf.to_container(
         cfg, resolve=True, throw_on_missing=True
     )
-    wandb.init(project="MMDE-seq", config=wandb.config)
+    wandb.init(project=cfg.project, config=wandb.config)
     # initialize data
-    datagen = BlobDataGen(cfg.data)
+    datagen = instantiate(cfg.data)
 
     # initialize operator
-    if cfg.operator.type == "rotation":
-        operator = RotateOperator(cfg.operator.p, cfg.operator.d)
-    else:
-        raise NotImplementedError
+    operator = instantiate(cfg.operator)
+
     # initialize device
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    # initialize network
-    net = MMDEMLP(cfg.model).to(device)
 
-    trainer = Trainer(cfg.train, net, operator, datagen,device,cfg.seed)
+    # initialize network
+    net = instantiate(cfg.model)
+
+    # initialize the trainer object and fit the network to the task
+    trainer = Trainer(cfg.train, net, operator, datagen, device, cfg.seed)
     trainer.train()
 
 

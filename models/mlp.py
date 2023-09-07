@@ -51,7 +51,7 @@ class MMDEMLP(MLP):
     The forward method implements a custom operation over the outputs of the base MLP.
     """
 
-    def __init__(self, cfg):
+    def __init__(self, input_size, hidden_layer_size, output_size, batch_norm, drop_out, drop_out_p):
         """
         Initializes the MMDEMLP object.
 
@@ -66,15 +66,15 @@ class MMDEMLP(MLP):
         """
 
         # Extract configuration parameters
-        input_size = cfg.input_size
-        hidden_layer_size = cfg.hidden_layer_size
-        output_size = cfg.output_size
-        batch_norm = cfg.batch_norm
-        drop_out = cfg.drop_out.flag
-        p = cfg.drop_out.p
+        # input_size = cfg.input_size
+        # hidden_layer_size = cfg.hidden_layer_size
+        # output_size = cfg.output_size
+        # batch_norm = cfg.batch_norm
+        # drop_out = cfg.drop_out.flag
+        # drop_out_p = cfg.drop_out.p
 
         # Initialize base MLP
-        super(MMDEMLP, self).__init__(input_size, hidden_layer_size, output_size, batch_norm, drop_out, p)
+        super(MMDEMLP, self).__init__(input_size, hidden_layer_size, output_size, batch_norm, drop_out, drop_out_p)
 
         # Activation function for the custom operation in the forward method
         self.sigma = torch.nn.Tanh()

@@ -28,8 +28,8 @@ class Trainer:
         self.lr = cfg.lr
         self.epochs = cfg.epochs
         self.seqs = cfg.seqs
-        self.patience = cfg.patience
-        self.delta = cfg.delta
+        self.patience = cfg.earlystopping.patience
+        self.delta = cfg.earlystopping.delta
         self.alpha = cfg.alpha
         self.T = cfg.T
         self.operator = operator

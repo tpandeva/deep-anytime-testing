@@ -50,7 +50,7 @@ class EarlyStopper:
         """
         Resets the counter to 0.
 
-        This can be useful when using the same EarlyStopper object across different training phases or models.
+        This can be useful when using the same EarlyStopper object across different training phases or model.
         """
 
         self.counter = 0

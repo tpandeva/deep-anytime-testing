@@ -38,7 +38,7 @@ class RotateOperator(Operator):
         - torch.Tensor: Tensor after applying rotation operation.
         """
         if x.dim() != 3:
-            raise ValueError(f"Expected input tensor of 2 dimensions, but got {x.dim()}.")
+            raise ValueError(f"Expected input tensor of 3 dimensions, but got {x.dim()}.")
 
         if x.size(1) != self.p:
             raise ValueError(f"Expected input tensor second dimension to be {self.p}, but got {x.size(1)}.")
