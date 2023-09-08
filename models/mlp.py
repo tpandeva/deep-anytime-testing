@@ -8,7 +8,7 @@ class MLP(nn.Module):
     A multi-layer perceptron (MLP) with ReLU activation function and optional batch normalization and dropout layers.
     """
 
-    def __init__(self, input_size, hidden_layer_size, output_size, batch_norm=True, drop_out = True, p=0.3):
+    def __init__(self, input_size, hidden_layer_size, output_size, batch_norm=True, drop_out=True, p=0.3, bias=False):
         super(MLP, self).__init__()
 
         layers = []
@@ -17,7 +17,7 @@ class MLP(nn.Module):
         # Add hidden layers with optional batch normalization and drop out
         if isinstance(hidden_layer_size, (list, ListConfig)):
             for out_features in hidden_layer_size:
-                layers.append(nn.Linear(in_features, out_features))
+                layers.append(nn.Linear(in_features, out_features, bias=bias))
                 if batch_norm:
                     layers.append(nn.BatchNorm1d(out_features))
                 layers.append(nn.ReLU())
@@ -51,7 +51,7 @@ class MMDEMLP(MLP):
     The forward method implements a custom operation over the outputs of the base MLP.
     """
 
-    def __init__(self, input_size, hidden_layer_size, output_size, batch_norm, drop_out, drop_out_p):
+    def __init__(self, input_size, hidden_layer_size, output_size, batch_norm, drop_out, drop_out_p,bias):
         """
         Initializes the MMDEMLP object.
 
@@ -62,10 +62,11 @@ class MMDEMLP(MLP):
         - batch_norm (bool): Indicates if batch normalization should be applied.
         - drop_out(bool): Indicates if dropout should be applied.
         - drop_out_p (float): The probability of an element to be zeroed.
+        - bias (bool): Indicates if bias term whould be added to the linear layer
         """
 
         # Initialize base MLP
-        super(MMDEMLP, self).__init__(input_size, hidden_layer_size, output_size, batch_norm, drop_out, drop_out_p)
+        super(MMDEMLP, self).__init__(input_size, hidden_layer_size, output_size, batch_norm, drop_out, drop_out_p,bias)
 
         # Activation function for the custom operation in the forward method
         self.sigma = torch.nn.Tanh()

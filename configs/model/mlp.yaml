@@ -5,4 +5,4 @@ output_size: 1
 batch_norm: true
 drop_out: false
 drop_out_p: 0.5
-
+bias: false

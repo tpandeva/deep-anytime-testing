@@ -53,17 +53,17 @@ class Trainer:
             tau_z = self.operator.compute(z)
             z = torch.transpose(z, 1, 2).reshape(-1, 2 * self.operator.p)
             tau_z = torch.transpose(tau_z, 1, 2).reshape(-1, 2 * self.operator.p)
-            if mode is "train":
+            if mode == "train":
                 out = self.net(z, tau_z)
             else:
                 out = self.net(z, tau_z).detach()
             loss = -out.mean()
             mmde = torch.exp(out.sum() / 2)
-            if mode is "train":
+            if mode == "train":
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
-            self.log({f"{mode}_eval": mmde.item(), f"{mode}_loss": loss.item()})
+        self.log({f"{mode}_eval": mmde.item(), f"{mode}_loss": loss.item()})
         return loss, mmde
 
     def load_data(self, seed):
@@ -84,12 +84,12 @@ class Trainer:
             val_loader = DataLoader(val_data, batch_size=self.bs, shuffle=True)
             for t in range(self.epochs):
                 self.train_evaluate_epoch(train_loader)
-                _, loss_val = self.train_evaluate_epoch(val_loader, mode='val')
+                loss_val, _ = self.train_evaluate_epoch(val_loader, mode='val')
                 if self.early_stopper.early_stop(loss_val.detach()) or (t + 1) == self.epochs:
                     test_data, test_loader = self.load_data(self.seed + k + 2)
-                    mmde_conditional, _ = self.train_evaluate_epoch(test_loader, mode='test')
+                    _, mmde_conditional = self.train_evaluate_epoch(test_loader, mode='test')
                     mmdes.append(mmde_conditional.item())
-                    mmde = np.prod(np.array(mmdes[self.T:])) if k > self.T else 1
+                    mmde = np.prod(np.array(mmdes[self.T:])) if k >= self.T else 1
                     self.log({"aggregated_test_eval": mmde})
                     train_data = ConcatDataset([train_data, val_data])
                     val_data = test_data

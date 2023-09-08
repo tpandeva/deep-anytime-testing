@@ -8,6 +8,7 @@ from hydra.utils import instantiate
 
 @hydra.main(config_path='configs', config_name='config.yaml')
 def train_pipeline(cfg: DictConfig):
+    print(cfg)
     # set seed
     torch.manual_seed(cfg.seed)
     np.random.seed(cfg.seed)
@@ -27,6 +28,8 @@ def train_pipeline(cfg: DictConfig):
 
     # initialize network
     net = instantiate(cfg.model)
+    print(net)
+    wandb.watch(net)
 
     # initialize the trainer object and fit the network to the task
     trainer = Trainer(cfg.train, net, operator, datagen, device, cfg.seed)

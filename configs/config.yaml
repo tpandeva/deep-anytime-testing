@@ -1,29 +1,32 @@
 defaults:
-  - _self_
   - data: blob
   - model: mlp
   - operator: rotation
   - override hydra/job_logging: colorlog
   - override hydra/hydra_logging: colorlog
 
-project: "MMDE-seq"
-seed: 1
+project: "MMDE-indep"
+seed: 10
 
 data:
-  samples: 1500
+  samples: 1080
   type: "type2"
+  with_labels: true
+model:
+  input_size: 6
+  hidden_layer_size: [ 50, 50 ]
 
 train:
   lr: 0.001
   earlystopping:
-    patience: 50
+    patience: 20
     delta: 0.0
   epochs: 1000
   seqs: 1 # number of mini-batches
   bootstraps: 1
-  T: 20 #Warm start number of mini-batches used for the training only
+  T: 0 #Warm start number of mini-batches used for the training only
   alpha: 0.05 # significance level
-  batch_size: 900
+  batch_size: 1080
 operator:
   p: 3
   d: 2

@@ -81,10 +81,14 @@ class BlobData(Dataset): # TODO: the code works for only for two dimensions (d=2
             Y = torch.from_numpy(Z)
         self.x = X.float()
         self.y = Y.float()
+        self.z = torch.stack([self.x, self.y], dim=2)
         if with_labels:
             self.x = torch.concat((X.float(), torch.ones((X.shape[0], 1))), dim=1)
             self.y = torch.concat((Y.float(), torch.zeros((Y.shape[0], 1))), dim=1)
-        self.z = torch.stack([self.x, self.y], dim=2)
+            self.z = torch.concat((self.x, self.y))
+            idx = torch.randperm(self.z.shape[0])
+            self.z  = self.z[idx]
+            self.z = torch.stack([self.z[:samples,:], self.z[samples:,:]], dim=2)
 
     def __len__(self):
         return self.x.shape[0]
