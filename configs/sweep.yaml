@@ -14,3 +14,8 @@ parameters:
     distribution: categorical
     values: [[10, 10], [20, 20], [30, 30], [40, 40], [50, 50],[10, 10, 10], [20, 20, 20], [30, 30, 30], [40, 40, 40], [50, 50, 50]]
 
+command:
+  - ${env}
+  - python
+  - ${program}
+  - ${args_no_hyphens}
