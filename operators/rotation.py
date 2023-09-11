@@ -45,3 +45,7 @@ class RotateOperator(Operator):
 
         # Apply rotation using masking
         return (1 - self.mask) * x + self.mask * (x @ self.Tau)
+
+    def to(self, device: torch.device) -> None:
+        self.mask = self.mask.to(device)
+        self.Tau = self.Tau.to(device)

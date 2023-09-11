@@ -7,4 +7,7 @@ class Operator(ABC):
     @abstractmethod
     def compute(self, x: torch.Tensor) -> torch.Tensor:
         pass
+    @abstractmethod
+    def to(self, device: torch.device) -> None:
+        pass
 

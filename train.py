@@ -20,14 +20,15 @@ def train_pipeline(cfg: DictConfig):
     # initialize data
     datagen = instantiate(cfg.data)
 
-    # initialize operator
-    operator = instantiate(cfg.operator)
-
     # initialize device
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+    # initialize operator
+    operator = instantiate(cfg.operator)
+    operator.to(device)
+
     # initialize network
-    net = instantiate(cfg.model)
+    net = instantiate(cfg.model).to(device)
     print(net)
     wandb.watch(net)
 
