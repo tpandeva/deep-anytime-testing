@@ -1,7 +1,7 @@
 defaults:
   - data: blob
   - model: mlp
-  - operator: rotation
+  - operator: swap
   - override hydra/job_logging: colorlog
   - override hydra/hydra_logging: colorlog
 

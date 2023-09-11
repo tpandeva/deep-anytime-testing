@@ -1,2 +1,2 @@
-from .rotation import RotateOperator
+from .swap import RotateOperator
 from .symmetry import SymOperator

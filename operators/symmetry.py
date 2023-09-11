@@ -26,3 +26,6 @@ class SymOperator(Operator):
         - torch.Tensor: Tensor after applying symmetric operation.
         """
         return self.Tau * x
+
+    def to(self, device: torch.device) -> None:
+        self.Tau = self.Tau.to(device)
