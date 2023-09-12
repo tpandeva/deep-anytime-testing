@@ -98,6 +98,7 @@ class BlobData(Dataset): # TODO: the code works for only for two dimensions (d=2
 
 class BlobDataGen(DataGenerator):
     def __init__(self, type, samples, r, d, rho, with_labels):
+        super().__init__(type, samples)
         self.type, self.samples, self.r, self.d, self.rho, self.with_labels = type, samples, r, d, rho, with_labels
     def generate(self, seed) ->Dataset:
         return BlobData(self.type, self.samples,self.r, self.d,
