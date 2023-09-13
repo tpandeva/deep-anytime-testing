@@ -58,7 +58,7 @@ class Trainer:
             else:
                 out = self.net(z, tau_z).detach()
             loss = -out.mean()
-            mmde = torch.exp(out.sum() / 2)
+            mmde = torch.exp(out.sum())
             if mode == "train":
                 self.optimizer.zero_grad()
                 loss.backward()
