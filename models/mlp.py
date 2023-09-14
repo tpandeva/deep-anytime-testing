@@ -51,7 +51,7 @@ class MMDEMLP(MLP):
     The forward method implements a custom operation over the outputs of the base MLP.
     """
 
-    def __init__(self, input_size, hidden_layer_size, output_size, batch_norm, drop_out, drop_out_p,bias):
+    def __init__(self, input_size, hidden_layer_size, output_size, batch_norm, drop_out, drop_out_p, bias, full_dim=False):
         """
         Initializes the MMDEMLP object.
 
@@ -62,14 +62,16 @@ class MMDEMLP(MLP):
         - batch_norm (bool): Indicates if batch normalization should be applied.
         - drop_out(bool): Indicates if dropout should be applied.
         - drop_out_p (float): The probability of an element to be zeroed.
-        - bias (bool): Indicates if bias term whould be added to the linear layer
+        - bias (bool): Indicates if bias term would be added to the linear layer
+        - full_dim (bool): Indicates if the full dimension of the input should be used.
         """
 
         # Initialize base MLP
-        super(MMDEMLP, self).__init__(input_size, hidden_layer_size, output_size, batch_norm, drop_out, drop_out_p,bias)
+        super(MMDEMLP, self).__init__(input_size, hidden_layer_size, output_size, batch_norm, drop_out, drop_out_p, bias)
 
         # Activation function for the custom operation in the forward method
         self.sigma = torch.nn.Tanh()
+        self.full_dim = full_dim
 
     def forward(self, x, y) -> torch.Tensor:
         """
@@ -84,8 +86,8 @@ class MMDEMLP(MLP):
         """
 
         # Compute the outputs from the base MLP model for x and y
-        g_x = self.model(x)
-        g_y = self.model(y)
+        g_x = self.model(x) if self.full_dim else self.model(x[:, :self.input_size])
+        g_y = self.model(y) if self.full_dim else self.model(y[:, :self.input_size])
 
         # Compute final output
         output = 2 * torch.log(1 + self.sigma(g_x - g_y))
