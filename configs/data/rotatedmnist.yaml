@@ -1,0 +1,5 @@
+_target_: "data.rotatedmnist.RotatedMNISTDataGen"
+samples: 1000
+type: "type2"
+file1: "something"
+file2: "something"

@@ -1,3 +1,5 @@
+from abc import abstractmethod
+from abc import ABC
 import torch
 import numpy as np
 import logging
@@ -6,7 +8,6 @@ import wandb
 
 from models import EarlyStopper
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 class Trainer:
@@ -50,13 +51,10 @@ class Trainer:
         """Train/Evaluate the model for one epocj and log the results."""
         for z in loader:
             z = z.to(self.device)
-            tau_z = self.operator.compute(z)
-            z = torch.transpose(z, 1, 2).reshape(-1, 2 * self.operator.p)
-            tau_z = torch.transpose(tau_z, 1, 2).reshape(-1, 2 * self.operator.p)
             if mode == "train":
-                out = self.net(z, tau_z)
+                out = self.net(z, self.operator)
             else:
-                out = self.net(z, tau_z).detach()
+                out = self.net(z, self.operator).detach()
             loss = -out.mean()
             mmde = torch.exp(out.sum())
             if mode == "train":
