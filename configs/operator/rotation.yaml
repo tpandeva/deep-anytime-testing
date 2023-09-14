@@ -1,0 +1,3 @@
+_target_: "operators.rotation.RotateImgOperator"
+num_rotations: 8
+```
