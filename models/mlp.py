@@ -51,7 +51,7 @@ class MMDEMLP(MLP):
     The forward method implements a custom operation over the outputs of the base MLP.
     """
 
-    def __init__(self, input_size, hidden_layer_size, output_size, batch_norm, drop_out, drop_out_p, bias, full_dim=False):
+    def __init__(self, input_size, hidden_layer_size, output_size, batch_norm, drop_out, drop_out_p, bias, full_dim):
         """
         Initializes the MMDEMLP object.
 
