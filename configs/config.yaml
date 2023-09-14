@@ -1,0 +1,34 @@
+defaults:
+  - data: blob
+  - model: mlp
+  - operator: swap
+  - override hydra/job_logging: colorlog
+  - override hydra/hydra_logging: colorlog
+
+project: "MMDE-indep"
+seed: 0
+
+data:
+  samples: 900
+  type: "type2"
+  with_labels: true
+model:
+  input_size: 6
+  hidden_layer_size: [ 30, 30, 30 ]
+  batch_norm: true
+
+train:
+  lr: 0.0005
+  earlystopping:
+    patience: 20
+    delta: 0.0
+  epochs: 1000
+  seqs: 1 # number of mini-batches
+  T: 0 #Warm start number of mini-batches used for the training only
+  alpha: 0.05 # significance level
+  batch_size: 900
+operator:
+  p: 3
+  d: 2
+
+
