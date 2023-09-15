@@ -10,7 +10,7 @@ class CNN(nn.Module):
                                   nn.ReLU(),
                                   nn.MaxPool2d(2),
                                   nn.Dropout(0.25))
-        self.fc = nn.Sequential(nn.Linear(12544, 128),
+        self.fc = nn.Sequential(nn.Linear(9216, 128),
                                 nn.ReLU(),
                                 nn.Dropout(0.5),
                                 nn.Linear(128, output_size))
@@ -26,15 +26,17 @@ class RotCNN(CNN):
         super().__init__(input_size, output_size)
         self.sigma = torch.nn.Tanh()
 
-    def forward(self, x, y, rot_operator):
+    def forward(self, z, rot_operator):
+        x = z[:, :, :,:, 0]
+        y = z[:, :, :,:, 1]
         x = rot_operator.compute(x)
         y = rot_operator.compute(y)
-        num_rotations = x.shape
+        num_rotations = x.shape[0]
         out_x, out_y = 0, 0
         for i in range(num_rotations):
-            x_conv = self.conv(x[:,:,:,i])
+            x_conv = self.conv(x[i])
             out_x += torch.flatten(x_conv, 1)
-            y_conv = self.conv(y[:,:,:,i])
+            y_conv = self.conv(y[i])
             out_y += torch.flatten(y_conv, 1)
 
         g_x = self.fc(out_x)

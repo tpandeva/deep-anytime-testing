@@ -4,20 +4,25 @@ from torch.utils.data import Dataset
 import torch
 from .datagen import DataGenerator
 from PIL import Image
-
+from torchvision import transforms
 
 class MnistRotDataset(Dataset):
 
-    def __init__(self, X, Y, samples):
+    def __init__(self, X, Y, samples, transform):
         self.X = X
         self.Y = Y
         self.num_samples = samples
+        self.transform = transform
 
     def __getitem__(self, index):
         x, y = self.X[index], self.Y[index]
         x = Image.fromarray(x, mode='F')
         y = Image.fromarray(y, mode='F')
-        return x, y
+        if self.transform is not None:
+            x = self.transform(x)
+            y = self.transform(y)
+        z = torch.stack([x, y], dim=3)
+        return z
 
     def __len__(self):
         return self.num_samples
@@ -42,4 +47,8 @@ class RotatedMnistDataGen(DataGenerator):
 
     def generate(self,seed) -> Dataset:
         ind = self.index_sets_seq[seed]
-        return MnistRotDataset(self.X[ind,:,:], self.Y[ind,:,:], len(ind))
+        transform = transforms.Compose([
+            # you can add other transformations in this list
+            transforms.ToTensor()
+        ])
+        return MnistRotDataset(self.X[ind,:,:], self.Y[ind,:,:], len(ind), transform)

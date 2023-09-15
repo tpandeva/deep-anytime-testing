@@ -1,2 +1,3 @@
 _target_: "operators.rotation.RotateImgOperator"
+theta: null
 num_rotations: 8

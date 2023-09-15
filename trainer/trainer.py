@@ -25,7 +25,7 @@ class Trainer:
 
     def __init__(self, cfg, net, operator, datagen, device, seed):
         """Initializes the Trainer object with the provided configurations and parameters."""
-        self.seed = seed * 10000
+        self.seed = seed
         self.lr = cfg.lr
         self.epochs = cfg.epochs
         self.seqs = cfg.seqs
@@ -49,7 +49,7 @@ class Trainer:
 
     def train_evaluate_epoch(self, loader, mode="train"):
         """Train/Evaluate the model for one epocj and log the results."""
-        for z in loader:
+        for i, z in enumerate(loader):
             z = z.to(self.device)
             if mode == "train":
                 out = self.net(z, self.operator)
@@ -78,8 +78,7 @@ class Trainer:
         val_data, val_loader = self.load_data(self.seed + 1)
         mmdes = []
         for k in range(self.seqs):
-            train_loader = DataLoader(train_data, batch_size=self.bs, shuffle=True)
-            val_loader = DataLoader(val_data, batch_size=self.bs, shuffle=True)
+
             for t in range(self.epochs):
                 self.train_evaluate_epoch(train_loader)
                 loss_val, _ = self.train_evaluate_epoch(val_loader, mode='val')
