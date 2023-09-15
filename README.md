@@ -12,6 +12,15 @@ pip install -r requirements.txt
    **Blob Dataset**: The Blob dataset is a two-dimensional Gaussian mixture model with nine modes arranged on a 3 x 3 grid used by [[1]](#1) [[2]](#2) in their analysis.  The two distributions differ in their variance as visualized in the figure below.
 
     ![Blob Data](figures/blob_data.png)
+    
+   **Rotated MNIST**: The rotated MNIST dataset consists of rotated hand-written digits from the MNIST dataset. To download the dataset run the following command
+    ```
+   # download the dataset
+   wget -nc http://www.iro.umontreal.ca/~lisa/icml2007data/mnist_rotation_new.zip
+   # unzip the file
+   unzip -n mnist_rotation_new.zip -d mnist_rotation_new
+   ```
+
 
 3. Structure
 train.py contains the training pipeline for each experiment. Here, all objects are initialized by making use of hydra's config files (see folder configs) and the training is performed. The training pipeline consists of the following steps:
