@@ -3,7 +3,7 @@ import numpy as np
 import itertools
 from torch.utils.data import Dataset
 import torch
-from .datagen import DataGenerator
+from .datagen import DataGenerator, DatasetOperator
 def sample_D_blobs(N, sigma_mx_2, r=3, d=2, rho=0.03, rs=None):
     """
     Generate Blob-D for testing type-II error (or test power).
@@ -50,10 +50,9 @@ def sample_D_blobs(N, sigma_mx_2, r=3, d=2, rho=0.03, rs=None):
 # X, Y = sample_blobs_Q(N, sigma_mx_2)
 
 
-class BlobData(Dataset): # TODO: the code works for only for two dimensions (d=2)
+class BlobData(DatasetOperator): # TODO: the code works only for two dimensions (d=2)
     def __init__(self, type, samples, r=3, d=2, rho=0.03, with_labels = False, seed = 0, tau1 = None, tau2 = None):
-        self.tau1 = tau1
-        self.tau2 = tau2
+        super().__init__(tau1, tau2)
 
         sigma_mx_2_standard = np.array([[0.03, 0], [0, 0.03]])
         sigma_mx_2 = np.zeros([r**d, 2, 2])
@@ -94,16 +93,6 @@ class BlobData(Dataset): # TODO: the code works for only for two dimensions (d=2
             self.z  = self.z[idx]
             self.z = torch.stack([self.z[:samples,:], self.z[samples:,:]], dim=2)
 
-    def __len__(self):
-        return self.x.shape[0]
-
-    def __getitem__(self, idx):
-        tau1_z, tau2_z = self.z[idx], self.z[idx].clone()
-        if self.tau1 is not None:
-            tau1_z = self.tau1(tau1_z)
-        if self.tau2 is not None:
-            tau2_z = self.tau2(tau2_z)
-        return tau1_z, tau2_z
 
 class BlobDataGen(DataGenerator):
     def __init__(self, type, samples, r, d, rho, with_labels):

@@ -2,28 +2,14 @@ import numpy as np
 import itertools
 from torch.utils.data import Dataset
 import torch
-from .datagen import DataGenerator
-from PIL import Image
-from torchvision import transforms
+from .datagen import DataGenerator, DatasetOperator
 
-class MnistRotDataset(Dataset):
 
-    def __init__(self, z, samples, tau1, tau2):
+class MnistRotDataset(DatasetOperator):
+
+    def __init__(self, z, tau1, tau2):
+        super().__init__(tau1, tau2)
         self.z = z
-        self.num_samples = samples
-        self.tau1 = tau1
-        self.tau2 = tau2
-
-    def __getitem__(self, idx):
-        tau1_z, tau2_z = self.z[idx], self.z[idx].clone()
-        if self.tau1 is not None:
-            tau1_z = self.tau1(tau1_z)
-        if self.tau2 is not None:
-            tau2_z = self.tau2(tau2_z)
-        return tau1_z, tau2_z
-
-    def __len__(self):
-        return self.num_samples
 
 class RotatedMnistDataGen(DataGenerator):
     def __init__(self, type, samples,  file1, file2):
@@ -46,4 +32,4 @@ class RotatedMnistDataGen(DataGenerator):
 
     def generate(self,seed, tau1, tau2) -> Dataset:
         ind = self.index_sets_seq[seed]
-        return MnistRotDataset(self.z[ind,:,:], len(ind), tau1, tau2)
+        return MnistRotDataset(self.z[ind,:,:], tau1, tau2)
