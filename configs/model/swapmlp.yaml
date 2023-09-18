@@ -1,9 +1,0 @@
-_target_: "models.mlp.SwapMLP"
-input_size: 6
-hidden_layer_size: [10, 10, 10]
-output_size: 1
-batch_norm: true
-drop_out: false
-drop_out_p: 0.5
-bias: false
-full_dim: true # if true, mlp input size should be data dimension otherwise is the specified input_size

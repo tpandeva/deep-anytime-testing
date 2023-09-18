@@ -23,7 +23,7 @@ class Trainer:
         device: Device (CPU/GPU) on which computations will be performed.
     """
 
-    def __init__(self, cfg, net, operator, datagen, device, seed):
+    def __init__(self, cfg, net, tau1, tau2, datagen, device, seed):
         """Initializes the Trainer object with the provided configurations and parameters."""
         self.seed = seed
         self.lr = cfg.lr
@@ -33,7 +33,8 @@ class Trainer:
         self.delta = cfg.earlystopping.delta
         self.alpha = cfg.alpha
         self.T = cfg.T
-        self.operator = operator
+        self.tau1 = tau1
+        self.tau2 = tau2
         self.net = net
         self.datagen = datagen
         self.device = device
@@ -52,12 +53,13 @@ class Trainer:
         aggregated_loss = 0
         mmde = 1
         num_samples = len(loader.dataset)
-        for i, z in enumerate(loader):
+        for i, (z, tau_z) in enumerate(loader):
             z = z.to(self.device)
+            tau_z = tau_z.to(self.device)
             if mode == "train":
-                out = self.net(z, self.operator)
+                out = self.net(z,tau_z)
             else:
-                out = self.net(z, self.operator).detach()
+                out = self.net(z, tau_z).detach()
             loss = -out.mean()
             aggregated_loss +=-out.sum()
             mmde *= torch.exp(out.sum())
@@ -70,7 +72,7 @@ class Trainer:
 
     def load_data(self, seed, mode= "train"):
         """Load data using the datagen object and return a DataLoader object."""
-        data = self.datagen.generate(seed)
+        data = self.datagen.generate(seed, self.tau1, self.tau2)
         if mode in ["train", "val"]:
             data_loader = DataLoader(data, batch_size=self.bs, shuffle=True)
         else: data_loader = DataLoader(data, batch_size=len(data), shuffle=True)

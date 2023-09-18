@@ -15,7 +15,7 @@ class SymOperator(Operator):
         # Scalar symmetric operation value
         self.Tau = nn.Parameter(torch.tensor(-1.0), requires_grad=False)
 
-    def compute(self, x: torch.Tensor) -> torch.Tensor:
+    def __call__(self, x: torch.Tensor) -> torch.Tensor:
         """
         Apply the symmetric operation on the tensor.
 

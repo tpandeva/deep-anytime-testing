@@ -51,9 +51,13 @@ def sample_D_blobs(N, sigma_mx_2, r=3, d=2, rho=0.03, rs=None):
 
 
 class BlobData(Dataset): # TODO: the code works for only for two dimensions (d=2)
-    def __init__(self, type, samples, r=3, d=2, rho=0.03, with_labels = False, seed = 0):
+    def __init__(self, type, samples, r=3, d=2, rho=0.03, with_labels = False, seed = 0, tau1 = None, tau2 = None):
+        self.tau1 = tau1
+        self.tau2 = tau2
+
         sigma_mx_2_standard = np.array([[0.03, 0], [0, 0.03]])
         sigma_mx_2 = np.zeros([r**d, 2, 2])
+
         for i in range(r**d):
             sigma_mx_2[i] = sigma_mx_2_standard
             if i < 4:
@@ -94,12 +98,17 @@ class BlobData(Dataset): # TODO: the code works for only for two dimensions (d=2
         return self.x.shape[0]
 
     def __getitem__(self, idx):
-        return self.z[idx]
+        tau1_z, tau2_z = self.z[idx], self.z[idx].clone()
+        if self.tau1 is not None:
+            tau1_z = self.tau1(tau1_z)
+        if self.tau2 is not None:
+            tau2_z = self.tau2(tau2_z)
+        return tau1_z, tau2_z
 
 class BlobDataGen(DataGenerator):
     def __init__(self, type, samples, r, d, rho, with_labels):
         super().__init__(type, samples)
         self.type, self.samples, self.r, self.d, self.rho, self.with_labels = type, samples, r, d, rho, with_labels
-    def generate(self, seed) ->Dataset:
+    def generate(self, seed, tau1, tau2) ->Dataset:
         return BlobData(self.type, self.samples,self.r, self.d,
-                        self.rho, self.with_labels, seed)
+                        self.rho, self.with_labels, seed, tau1, tau2)

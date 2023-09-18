@@ -1,3 +1,4 @@
-_target_: "operators.swap.SwapOperator"
-p: 3
-d: 2
+swap:
+  _target_: "operators.swap.SwapOperator"
+  p: 3
+  d: 2

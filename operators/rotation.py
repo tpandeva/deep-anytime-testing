@@ -31,7 +31,7 @@ class RotateImgOperator(Operator):
         x = F.grid_sample(x, grid)
         return x
 
-    def compute(self, x):
+    def __call__(self, x):
         x_transformed = None
         for _ in range(self.num_rotations):
             x = self.rot_img(x.clone())

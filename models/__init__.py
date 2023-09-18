@@ -1,3 +1,3 @@
-from .mlp import MLP, MMDEMLP, SwapMLP
+from .mlp import MLP, MMDEMLP
 from .cnn import CNN, RotCNN
 from .earlystopping import EarlyStopper

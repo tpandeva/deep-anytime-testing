@@ -1,1 +1,2 @@
-_target_: "operators.symmetry.SymOperator"
+symmetry:
+  _target_: "operators.symmetry.SymOperator"

@@ -27,7 +27,7 @@ class SwapOperator(Operator):
         self.mask = nn.Parameter(torch.zeros(p, 2), requires_grad=False)
         self.mask[self.d:, :] = 1
 
-    def compute(self, x: torch.Tensor) -> torch.Tensor:
+    def __call__(self, x: torch.Tensor) -> torch.Tensor:
         """
         Apply the swap operation on the tensor.
 
@@ -37,11 +37,11 @@ class SwapOperator(Operator):
         Returns:
         - torch.Tensor: Tensor after applying swap operation.
         """
-        if x.dim() != 3:
-            raise ValueError(f"Expected input tensor of 3 dimensions, but got {x.dim()}.")
-
-        if x.size(1) != self.p:
-            raise ValueError(f"Expected input tensor second dimension to be {self.p}, but got {x.size(1)}.")
+        # if x.dim() != 3:
+        #     raise ValueError(f"Expected input tensor of 3 dimensions, but got {x.dim()}.")
+        #
+        # if x.size(1) != self.p:
+        #     raise ValueError(f"Expected input tensor second dimension to be {self.p}, but got {x.size(1)}.")
 
         # Apply swap using masking
         return (1 - self.mask) * x + self.mask * (x @ self.Tau)

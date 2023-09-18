@@ -1,0 +1,4 @@
+projection:
+  _target_: "operators.projection.ProjOperator"
+  input_dim: 0
+  p: null
