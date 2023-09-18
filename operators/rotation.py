@@ -5,7 +5,7 @@ from .base import Operator
 import numpy as np
 
 class RotateImgOperator(Operator):
-    def __init__(self, theta=None, num_rotations=None, dtype=torch.float64):
+    def __init__(self, theta=None, num_rotations=None):
         super().__init__()
 
         if theta is None and num_rotations is None:
@@ -17,28 +17,29 @@ class RotateImgOperator(Operator):
             theta = min(2 * torch.pi / num_rotations, theta)
         elif num_rotations is None:
             num_rotations = 1
-
+        self.dtype = torch.FloatTensor
         self.rot_mat = nn.Parameter(torch.tensor([
             [np.cos(theta), -np.sin(theta), 0],
             [np.sin(theta), np.cos(theta), 0]
-        ], dtype=dtype), requires_grad=False)
+        ]), requires_grad=False).type(self.dtype)
         self.num_rotations = num_rotations
-        self.dtype = dtype
+
 
     def rot_img(self, x):
-        # x: (batch_size, channels, height, width)
+        # x: ( channels, height, width)
         grid = F.affine_grid(self.rot_mat[None, ...].type(self.dtype).repeat(x.shape[0], 1, 1), x.size()).type(self.dtype)
-        x = F.grid_sample(x, grid)
+        x = F.grid_sample(x.type(self.dtype), grid)
         return x
 
     def __call__(self, x):
         x_transformed = None
+        x = x.unsqueeze(0)
         for _ in range(self.num_rotations):
-            x = self.rot_img(x.clone())
+            x = self.rot_img(x.clone()).type(self.dtype)
             if x_transformed is None:
-                x_transformed = x[None, :, :, :, :]
+                x_transformed = x
             else:
-                x_transformed = torch.cat((x_transformed, x[None, :, :, :, :]), dim=0)
+                x_transformed = torch.cat((x_transformed, x), dim=0)
         return x_transformed
 
     def to(self, device):

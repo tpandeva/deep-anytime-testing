@@ -26,14 +26,14 @@ class RotCNN(CNN):
         super().__init__(input_size, output_size)
         self.sigma = torch.nn.Tanh()
 
-    def forward(self, x,y, rot_operator):
+    def forward(self, x,y):
 
-        num_rotations = x.shape[0]
+        num_rotations = x.shape[1] if len(x.shape) == 5 else 1
         out_x, out_y = 0, 0
         for i in range(num_rotations):
-            x_conv = self.conv(x[i])
+            x_conv = self.conv(x[:,i,...])
             out_x += torch.flatten(x_conv, 1)
-            y_conv = self.conv(y[i])
+            y_conv = self.conv(y[:,i,...])
             out_y += torch.flatten(y_conv, 1)
 
         g_x = self.fc(out_x)

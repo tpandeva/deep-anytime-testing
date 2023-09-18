@@ -1,0 +1,3 @@
+reshape:
+  _target_: "operators.reshape.ReshapeOperator"
+  shape: [1, 28, 28]

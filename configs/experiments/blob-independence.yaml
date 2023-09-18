@@ -1,45 +1,29 @@
 defaults:
-  - data: rotatedmnist
-  - model: rotcnn
-  - operator@tau1:
-      - projection
-      - rotation
+  - data: blob
+  - model: mlp
   - operator@tau2:
       - swap
-      - projection
-      - rotation
   - override hydra/job_logging: colorlog
   - override hydra/hydra_logging: colorlog
 
-project: "MNIST-transforms"
+project: "BLOB-transforms"
 seed: 0
 
-tau1:
-  projection:
-    input_dim: 0
-  resize:
-    _target_: "torch.transforms.Resize"
-    size: [ 28, 28 ]
-  rotation:
-    num_rotations: 8
+tau1: null
 
 tau2:
   swap:
-    p: ${eval:28 * 28} # size of the image when flattened
-    d: 0
-  projection:
-    input_dim: 0
-  resize:
-    _target_: "torch.transforms.Resize"
-    size: [28, 28]
-  rotation:
-    num_rotations: 8
+    p: 3
+    d: 2
 
+model:
+  input_size: 6
+  hidden_layer_size: [50, 50]
 
 data:
-  samples: 100
+  samples: 2700
   type: "type2"
-
+  with_labels: true
 
 train:
   lr: 0.0005
@@ -50,4 +34,7 @@ train:
   seqs: 1 # number of mini-batches
   T: 0 #Warm start number of mini-batches used for the training only
   alpha: 0.05 # significance level
-  batch_size: 64
+  batch_size: 90
+
+
+
