@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
     testset = torchvision.datasets.CIFAR10(root='./cifar10', train=False,
                                            download=True, transform=transform_test)
-    testloader = torch.utils.data.DataLoader(testset, batch_size=len(testset),
+    testloader = torch.utils.data.DataLoader(testset, batch_size=1,
                                              shuffle=False, num_workers=1)
     # Load the best model
     best_model = models.resnet50(pretrained=True)
