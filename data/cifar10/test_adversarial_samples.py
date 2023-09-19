@@ -4,6 +4,8 @@ import torchvision.transforms as transforms
 import torch.nn as nn
 import torchvision.models as models
 from cifar10_classifier_train import test
+from models import Cifar10Net
+
 def fgsm_attack(model, criterion, images, labels, device, epsilon):
     images.requires_grad_(True)
     outputs = model(images)
@@ -59,14 +61,15 @@ if __name__ == '__main__':
 
     testset = torchvision.datasets.CIFAR10(root='./cifar10', train=False,
                                            download=True, transform=transform_test)
-    testloader = torch.utils.data.DataLoader(testset, batch_size=1,
+    testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
                                              shuffle=False, num_workers=1)
     # Load the best model
-    best_model = models.resnet50(pretrained=True)
-    # Modify conv1 to suit CIFAR-10
-    num_features = best_model.fc.in_features
-    best_model.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
-    best_model.fc = nn.Linear(num_features, 10)
+    # best_model = models.resnet50(pretrained=True)
+    # # Modify conv1 to suit CIFAR-10
+    # num_features = best_model.fc.in_features
+    # best_model.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
+    # best_model.fc = nn.Linear(num_features, 10)
+    best_model = Cifar10Net(10)
     # Load checkpoints
     checkpoint = torch.load('best_model.pth')
     best_model.load_state_dict(checkpoint['model_state_dict'])
