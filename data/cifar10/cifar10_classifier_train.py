@@ -3,9 +3,111 @@ import torch
 import torchvision
 import torchvision.transforms as transforms
 import torch.nn as nn
-import torch.nn.functional as F
 import torchvision.models as models
 
+
+def train(model, trainloader, criterion, optimizer, device):
+    train_loss = 0.0
+    train_total = 0
+    train_correct = 0
+
+    # Switch to train mode
+    model.train()
+
+    for i, data in enumerate(trainloader, 0):
+        inputs, labels = data
+        inputs, labels = inputs.to(device), labels.to(device)
+
+        # Zero the parameter gradients
+        optimizer.zero_grad()
+
+        # Forward pass
+        outputs = model(inputs)
+        loss = criterion(outputs, labels)
+
+        # Backward pass and optimize
+        loss.backward()
+        optimizer.step()
+
+        # Update training loss
+        train_loss += loss.item() * inputs.size(0)
+
+        # Compute training accuracy
+        _, predicted = torch.max(outputs, 1)
+        train_total += labels.size(0)
+        train_correct += (predicted == labels).sum().item()
+
+    # Compute average training loss and accuracy
+    train_loss = train_loss / len(trainloader.dataset)
+    train_accuracy = 100.0 * train_correct / train_total
+
+    return model, train_loss, train_accuracy
+
+
+def test(model, testloader, criterion, device):
+    test_loss = 0.0
+    test_total = 0
+    test_correct = 0
+
+    # Switch to evaluation mode
+    model.eval()
+
+    with torch.no_grad():
+        for inputs, labels in testloader:
+            inputs, labels = inputs.to(device), labels.to(device)
+
+            # Forward pass
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+
+            # Update test loss
+            test_loss += loss.item() * inputs.size(0)
+
+            # Compute test accuracy
+            _, predicted = torch.max(outputs, 1)
+            test_total += labels.size(0)
+            test_correct += (predicted == labels).sum().item()
+
+    # Compute average test loss and accuracy
+    test_loss = test_loss / len(testloader.dataset)
+    test_accuracy = 100.0 * test_correct / test_total
+
+    return test_loss, test_accuracy
+
+
+def train_epochs(model, trainloader, testloader, criterion, optimizer, device, num_epochs, save_interval=5):
+    train_losses = []
+    train_accuracies = []
+    test_losses = []
+    test_accuracies = []
+    best_accuracy = 0.0
+
+    for epoch in range(num_epochs):
+        print(f'Epoch {epoch + 1}/{num_epochs}')
+        model, train_loss, train_accuracy = train(model, trainloader, criterion, optimizer, device)
+        test_loss, test_accuracy = test(model, testloader, criterion, device)
+
+        train_losses.append(train_loss)
+        train_accuracies.append(train_accuracy)
+        test_losses.append(test_loss)
+        test_accuracies.append(test_accuracy)
+
+        print(f'Train Loss: {train_loss:.4f} - Train Accuracy: {train_accuracy:.2f}%')
+        print(f'Test Loss: {test_loss:.4f} - Test Accuracy: {test_accuracy:.2f}%')
+        print()
+
+        # Save the model if the current test accuracy is higher than the best accuracy
+        if test_accuracy > best_accuracy:
+            best_accuracy = test_accuracy
+            checkpoint = {
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                # 'optimizer_state_dict': optimizer.state_dict(),
+                'test_accuracy': test_accuracy
+            }
+            torch.save(checkpoint, 'best_model.pth')
+
+    return model, train_losses, train_accuracies, test_losses, test_accuracies
 if __name__ == '__main__':
     # download and load training dataset
 
@@ -52,104 +154,7 @@ if __name__ == '__main__':
     model = model.to(device)
 
     # training
-    def train(model, trainloader, criterion, optimizer, device):
-        train_loss = 0.0
-        train_total = 0
-        train_correct = 0
 
-        # Switch to train mode
-        model.train()
-
-        for i, data in enumerate(trainloader, 0):
-            inputs, labels = data
-            inputs, labels = inputs.to(device), labels.to(device)
-
-            # Zero the parameter gradients
-            optimizer.zero_grad()
-
-            # Forward pass
-            outputs = model(inputs)
-            loss = criterion(outputs, labels)
-
-            # Backward pass and optimize
-            loss.backward()
-            optimizer.step()
-
-            # Update training loss
-            train_loss += loss.item() * inputs.size(0)
-
-            # Compute training accuracy
-            _, predicted = torch.max(outputs, 1)
-            train_total += labels.size(0)
-            train_correct += (predicted == labels).sum().item()
-
-        # Compute average training loss and accuracy
-        train_loss = train_loss / len(trainloader.dataset)
-        train_accuracy = 100.0 * train_correct / train_total
-
-        return model, train_loss, train_accuracy
-    def test(model, testloader, criterion, device):
-        test_loss = 0.0
-        test_total = 0
-        test_correct = 0
-
-        # Switch to evaluation mode
-        model.eval()
-
-        with torch.no_grad():
-            for inputs, labels in testloader:
-                inputs, labels = inputs.to(device), labels.to(device)
-
-                # Forward pass
-                outputs = model(inputs)
-                loss = criterion(outputs, labels)
-
-                # Update test loss
-                test_loss += loss.item() * inputs.size(0)
-
-                # Compute test accuracy
-                _, predicted = torch.max(outputs, 1)
-                test_total += labels.size(0)
-                test_correct += (predicted == labels).sum().item()
-
-        # Compute average test loss and accuracy
-        test_loss = test_loss / len(testloader.dataset)
-        test_accuracy = 100.0 * test_correct / test_total
-
-        return test_loss, test_accuracy
-    def train_epochs(model, trainloader, testloader, criterion, optimizer, device, num_epochs, save_interval=5):
-        train_losses = []
-        train_accuracies = []
-        test_losses = []
-        test_accuracies = []
-        best_accuracy = 0.0
-
-        for epoch in range(num_epochs):
-            print(f'Epoch {epoch + 1}/{num_epochs}')
-            model, train_loss, train_accuracy = train(model, trainloader, criterion, optimizer, device)
-            test_loss, test_accuracy = test(model, testloader, criterion, device)
-
-            train_losses.append(train_loss)
-            train_accuracies.append(train_accuracy)
-            test_losses.append(test_loss)
-            test_accuracies.append(test_accuracy)
-
-            print(f'Train Loss: {train_loss:.4f} - Train Accuracy: {train_accuracy:.2f}%')
-            print(f'Test Loss: {test_loss:.4f} - Test Accuracy: {test_accuracy:.2f}%')
-            print()
-
-            # Save the model if the current test accuracy is higher than the best accuracy
-            if test_accuracy > best_accuracy:
-                best_accuracy = test_accuracy
-                checkpoint = {
-                    'epoch' : epoch,
-                    'model_state_dict' : model.state_dict(),
-                    #'optimizer_state_dict': optimizer.state_dict(),
-                    'test_accuracy' : test_accuracy
-                }
-                torch.save(checkpoint, 'best_model.pth')
-
-        return model, train_losses, train_accuracies, test_losses, test_accuracies
     # Set hyperparameters
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
