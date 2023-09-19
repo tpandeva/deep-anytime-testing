@@ -4,7 +4,7 @@ import torchvision
 import torchvision.transforms as transforms
 import torch.nn as nn
 import torchvision.models as models
-
+from models import Cifar10Net
 
 def train(model, trainloader, criterion, optimizer, device):
     train_loss = 0.0
@@ -136,19 +136,16 @@ if __name__ == '__main__':
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
                                              shuffle=False, num_workers=1)
 
-    classes = ('plane', 'car', 'bird', 'cat',
-               'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-
 
 
     # model
-
-    model = models.resnet50(pretrained=True)
-    # Modify conv1 to suit CIFAR-10
-    model.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
-    # Modify the final fully connected layer according to the number of classes
-    num_features = model.fc.in_features
-    model.fc = nn.Linear(num_features, 10)
+    model = Cifar10Net(10)
+    # model = models.resnet50(pretrained=True)
+    # # Modify conv1 to suit CIFAR-10
+    # model.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
+    # # Modify the final fully connected layer according to the number of classes
+    # num_features = model.fc.in_features
+    # model.fc = nn.Linear(num_features, 10)
     # Move the model to GPU if available
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = model.to(device)
