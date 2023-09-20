@@ -2,7 +2,6 @@ import torch
 import torchvision
 import torchvision.transforms as transforms
 import torch.nn as nn
-import torchvision.models as models
 from cifar10_classifier_train import test
 from models import Cifar10Net
 
@@ -59,7 +58,7 @@ if __name__ == '__main__':
 
     batch_size = 64
 
-    testset = torchvision.datasets.CIFAR10(root='./cifar10', train=False,
+    testset = torchvision.datasets.CIFAR10(root='./cifar10.yaml', train=False,
                                            download=True, transform=transform_test)
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
                                              shuffle=False, num_workers=1)

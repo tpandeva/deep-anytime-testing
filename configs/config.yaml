@@ -1,48 +1,26 @@
 defaults:
-  - data: rotatedmnist
-  - model: rotcnn
+  - data: cifar10
+  - model: mlp
   - operator@tau1:
-      - projection
-      - reshape
-      - rotation
-  - operator@tau2:
-      - swap
-      - projection
-      - reshape
-      - rotation
+      - net
   - override hydra/job_logging: colorlog
   - override hydra/hydra_logging: colorlog
 
-project: "MNIST-transforms"
+project: "Cifar10-AA"
 seed: 0
 
 tau1:
-  projection:
-    input_dim: 0
-  reshape:
-    shape: [1, 28, 28 ]
-  rotation:
-    num_rotations: 8
+  net:
+    file_to_model: "data/cifar10/best_model.pth"
 
-tau2:
-  swap:
-    p: 784 # size of the image when flattened (28*28 = 784)
-    d: 0
-  projection:
-    input_dim: 0
-  reshape:
-    shape: [1, 28, 28]
-  rotation:
-    num_rotations: 8
+tau2: null
 
+model:
+  input_size: 10
 
 data:
-  samples: 100
-  type: "type2"
-  file1: "/Users/teddy/Downloads/mnist_rotation_new/mnist_all_rotation_normalized_float_test.amat"
-  file2: "/Users/teddy/Downloads/mnist_rotation_new/mnist_all_rotation_normalized_float_test.amat"
-
-
+  file: "data/cifar10/cifar10/"
+  file_to_model: "data/cifar10/best_model.pth"
 
 train:
   lr: 0.0005

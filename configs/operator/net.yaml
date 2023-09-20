@@ -3,4 +3,4 @@ net:
   net:
     _target_: "models.cifar10.Cifar10Net"
     num_classes: 10
-  file_to_model: "cifar10/best_model.pth"
+  file_to_model: "path/to/model.pth"

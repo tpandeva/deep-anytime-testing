@@ -1,0 +1,9 @@
+_target_: "data.cifar10adversarial.Cifar10AdversarialDataGen"
+samples: 1000
+file: "path/to/cifar10/"
+epsilon: 0.1
+model:
+  _target_: "models.cifar10.Cifar10Net"
+  num_classes: 10
+file_to_model: "file/to/model.pth"
+
