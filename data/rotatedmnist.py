@@ -12,8 +12,8 @@ class MnistRotDataset(DatasetOperator):
         self.z = z
 
 class RotatedMnistDataGen(DataGenerator):
-    def __init__(self, type, samples,  file1, file2):
-        super().__init__(type, samples)
+    def __init__(self, type, samples, data_seed, file1, file2):
+        super().__init__(type, samples, data_seed)
         if type == "type12":
             file1 = file2
         if type == "type11":

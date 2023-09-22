@@ -39,12 +39,14 @@ tau2:
 data:
   samples: 100
   type: "type2"
+  data_seed: 0
   file1: "/Users/teddy/Downloads/mnist_rotation_new/mnist_all_rotation_normalized_float_test.amat"
   file2: "/Users/teddy/Downloads/mnist_rotation_new/mnist_all_rotation_normalized_float_test.amat"
 
 
 
 train:
+  seed: 0
   lr: 0.0005
   earlystopping:
     patience: 20

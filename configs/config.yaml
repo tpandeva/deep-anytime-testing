@@ -27,7 +27,7 @@ model:
 
 data:
   samples: 900
-  type: "type2"
+  type: "type11"
   with_labels: false
   data_seed: 0
 
