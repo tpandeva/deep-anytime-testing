@@ -1,3 +1,5 @@
+import os
+os.environ['KMP_DUPLICATE_LIB_OK']='TRUE'
 import torch
 import numpy as np
 import hydra
@@ -10,9 +12,7 @@ from torchvision import transforms
 @hydra.main(config_path='configs', config_name='config.yaml')
 def train_pipeline(cfg: DictConfig):
     print(cfg)
-    # set seed
-    torch.manual_seed(cfg.seed)
-    np.random.seed(cfg.seed)
+
 
     wandb.config = OmegaConf.to_container(
         cfg, resolve=True, throw_on_missing=True
@@ -44,7 +44,7 @@ def train_pipeline(cfg: DictConfig):
     wandb.watch(net)
 
     # initialize the trainer object and fit the network to the task
-    trainer = Trainer(cfg.train, net, tau1, tau2, datagen, device, cfg.seed)
+    trainer = Trainer(cfg.train, net, tau1, tau2, datagen, device, cfg.data.data_seed)
     trainer.train()
 
 

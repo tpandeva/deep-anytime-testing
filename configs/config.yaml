@@ -1,50 +1,39 @@
 defaults:
-  - data: rotatedmnist
-  - model: rotcnn
+  - data: blob
+  - model: mlp
   - operator@tau1:
       - projection
-      - reshape
-      - rotation
   - operator@tau2:
       - swap
       - projection
-      - reshape
-      - rotation
   - override hydra/job_logging: colorlog
   - override hydra/hydra_logging: colorlog
 
-project: "MNIST-transforms"
-seed: 0
+project: "BLOB-2ST"
 
 tau1:
   projection:
     input_dim: 0
-  reshape:
-    shape: [1, 28, 28 ]
-  rotation:
-    num_rotations: 8
 
 tau2:
   swap:
-    p: 784 # size of the image when flattened (28*28 = 784)
+    p: 2
     d: 0
   projection:
     input_dim: 0
-  reshape:
-    shape: [1, 28, 28]
-  rotation:
-    num_rotations: 8
 
+model:
+  input_size: 2
 
 data:
-  samples: 100
+  samples: 900
   type: "type2"
-  file1: "/Users/teddy/Downloads/mnist_rotation_new/mnist_all_rotation_normalized_float_test.amat"
-  file2: "/Users/teddy/Downloads/mnist_rotation_new/mnist_all_rotation_normalized_float_test.amat"
-
+  with_labels: false
+  data_seed: 0
 
 
 train:
+  seed: 0
   lr: 0.0005
   earlystopping:
     patience: 20
@@ -53,4 +42,4 @@ train:
   seqs: 1 # number of mini-batches
   T: 0 #Warm start number of mini-batches used for the training only
   alpha: 0.05 # significance level
-  batch_size: 64
+  batch_size: 900

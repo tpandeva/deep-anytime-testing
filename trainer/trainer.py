@@ -23,9 +23,10 @@ class Trainer:
         device: Device (CPU/GPU) on which computations will be performed.
     """
 
-    def __init__(self, cfg, net, tau1, tau2, datagen, device, seed):
+    def __init__(self, cfg, net, tau1, tau2, datagen, device, data_seed):
         """Initializes the Trainer object with the provided configurations and parameters."""
-        self.seed = seed
+        self.data_seed = data_seed
+        self.seed = cfg.seed
         self.lr = cfg.lr
         self.epochs = cfg.epochs
         self.seqs = cfg.seqs
