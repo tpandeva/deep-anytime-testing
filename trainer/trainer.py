@@ -60,8 +60,10 @@ class Trainer:
             z = z.to(self.device)
             tau_z = tau_z.to(self.device)
             if mode == "train":
+                self.net = self.net.train()
                 out = self.net(z,tau_z)
             else:
+                self.net = self.net.eval()
                 out = self.net(z, tau_z).detach()
             loss = -out.mean()
             aggregated_loss +=-out.sum()

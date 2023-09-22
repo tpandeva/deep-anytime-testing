@@ -19,7 +19,7 @@ class MLP(nn.Module):
             for out_features in hidden_layer_size:
                 layers.append(nn.Linear(in_features, out_features, bias=bias))
                 if batch_norm:
-                    layers.append(nn.BatchNorm1d(out_features))
+                    layers.append(nn.LayerNorm(out_features))
                 layers.append(nn.ReLU())
                 if drop_out:
                     layers.append(nn.Dropout(p))
