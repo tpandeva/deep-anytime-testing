@@ -14,13 +14,15 @@ class Cifar10Adversarial(DatasetOperator):
         self.images, labels = z
         self.z = self.images
         self.images_adv = self.fgsm_attack(model, self.images.clone(), labels, torch.device('cpu'), epsilon)
+        self.tau1_z = self.tau1(self.images)
+        self.tau2_z = self.tau2(self.images_adv)
 
     def __getitem__(self, idx):
-        tau1_z, tau2_z = self.images[idx], self.images_adv[idx]
-        if self.tau1 is not None:
-            tau1_z = self.tau1(tau1_z[None,...]).squeeze()
-        if self.tau2 is not None:
-            tau2_z = self.tau2(tau2_z[None,...]).squeeze()
+        tau1_z, tau2_z = self.tau1_z[idx], self.tau2_z[idx]
+        # if self.tau1 is not None:
+        #     tau1_z = self.tau1(tau1_z[None,...]).squeeze()
+        # if self.tau2 is not None:
+        #     tau2_z = self.tau2(tau2_z[None,...]).squeeze()
         return tau1_z, tau2_z
 
     def fgsm_attack(self, model, images, labels, device, epsilon):
