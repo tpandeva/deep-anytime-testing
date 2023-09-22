@@ -54,7 +54,7 @@ class Trainer:
     def train_evaluate_epoch(self, loader, mode="train"):
         """Train/Evaluate the model for one epocj and log the results."""
         aggregated_loss = 0
-        mmde = 1
+        mmde_mult, mmde_mean = 1,0
         num_samples = len(loader.dataset)
         for i, (z, tau_z) in enumerate(loader):
             z = z.to(self.device)
@@ -65,13 +65,14 @@ class Trainer:
                 out = self.net(z, tau_z).detach()
             loss = -out.mean()
             aggregated_loss +=-out.sum()
-            mmde *= torch.exp(out.sum())
+            mmde_mult *= torch.exp(out.sum())
+            mmde_mean += torch.exp(out).sum()/num_samples
             if mode == "train":
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
-        self.log({f"{mode}_eval": mmde.item(), f"{mode}_loss": aggregated_loss.item()/num_samples})
-        return aggregated_loss/num_samples, mmde
+        self.log({f"{mode}_eval_mult": mmde_mult.item(),f"{mode}_eval_mean": mmde_mean.item(), f"{mode}_loss": aggregated_loss.item()/num_samples})
+        return aggregated_loss/num_samples, mmde_mult, mmde_mean
 
     def load_data(self, seed, mode= "train"):
         """Load data using the datagen object and return a DataLoader object."""
@@ -87,18 +88,20 @@ class Trainer:
         np.random.seed(self.seed)
         train_data, train_loader = self.load_data(self.seed, mode = "train")
         val_data, val_loader = self.load_data(self.seed + 1, mode = "val")
-        mmdes = []
+        mmdes_mult, mmdes_mean = [], []
         for k in range(self.seqs):
 
             for t in range(self.epochs):
                 self.train_evaluate_epoch(train_loader)
-                loss_val, _ = self.train_evaluate_epoch(val_loader, mode='val')
+                loss_val, _, _ = self.train_evaluate_epoch(val_loader, mode='val')
                 if self.early_stopper.early_stop(loss_val.detach()) or (t + 1) == self.epochs:
                     test_data, test_loader = self.load_data(self.seed + k + 2, mode = "test")
-                    _, mmde_conditional = self.train_evaluate_epoch(test_loader, mode='test')
-                    mmdes.append(mmde_conditional.item())
-                    mmde = np.prod(np.array(mmdes[self.T:])) if k >= self.T else 1
-                    self.log({"aggregated_test_eval": mmde})
+                    _, mmde_mult_conditional, mmde_mean_conditional = self.train_evaluate_epoch(test_loader, mode='test')
+                    mmdes_mult.append(mmde_mult_conditional.item())
+                    mmdes_mean.append(mmde_mean_conditional.item())
+                    mmde_mult = np.prod(np.array(mmdes_mult[self.T:])) if k >= self.T else 1
+                    mmde_mean = np.prod(np.array(mmdes_mean[self.T:])) if k >= self.T else 1
+                    self.log({"aggregated_test_eval_mult": mmde_mult, "aggregated_test_eval_mean": mmde_mean})
                     train_data = ConcatDataset([train_data, val_data])
                     val_data = test_data
                     train_loader = DataLoader(train_data, batch_size=self.bs, shuffle=True)
@@ -106,15 +109,18 @@ class Trainer:
                     self.log({"iterations": t})
                     break
             self.early_stopper.reset()
-            if mmde > (1. / self.alpha):
-                logging.info("Reject null at %f", mmde)
-                self.log({"steps": k})
+            if mmde_mult > (1. / self.alpha):
+                logging.info("Reject null at %f", mmde_mult)
+                self.log({"steps_mult": k})
+            if mmde_mult > (1. / self.alpha):
+                logging.info("Reject null at %f", mmde_mult)
+                self.log({"steps_mean": k})
 
         if self.save:
             import os
             if not os.path.exists(self.save_dir):
                 os.makedirs(self.save_dir)
-            pickle.dump(mmdes, open(self.save_dir + f"mmdes_{self.data_seed}.pkl", "wb"))
+            pickle.dump([mmde_mult, mmde_mean], open(self.save_dir + f"mmdes_{self.data_seed}.pkl", "wb"))
 
 
 
