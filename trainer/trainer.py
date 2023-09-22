@@ -71,8 +71,8 @@ class Trainer:
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
-        self.log({f"{mode}_eval_mult": mmde_mult.item(),f"{mode}_eval_mean": mmde_mean.item(), f"{mode}_loss": aggregated_loss.item()/num_samples})
-        return aggregated_loss/num_samples, mmde_mult, mmde_mean
+        self.log({f"{mode}_eval_mult": mmde_mult.item(),f"{mode}_eval_log": -aggregated_loss.item(),f"{mode}_eval_mean": mmde_mean.item(), f"{mode}_loss": aggregated_loss.item()/num_samples})
+        return aggregated_loss/num_samples, mmde_mult, mmde_mean, -aggregated_loss
 
     def load_data(self, seed, mode= "train"):
         """Load data using the datagen object and return a DataLoader object."""
@@ -88,20 +88,22 @@ class Trainer:
         np.random.seed(self.seed)
         train_data, train_loader = self.load_data(self.seed, mode = "train")
         val_data, val_loader = self.load_data(self.seed + 1, mode = "val")
-        mmdes_mult, mmdes_mean = [], []
+        mmdes_mult, mmdes_mean, log_mmdes = [], [], []
         for k in range(self.seqs):
 
             for t in range(self.epochs):
                 self.train_evaluate_epoch(train_loader)
-                loss_val, _, _ = self.train_evaluate_epoch(val_loader, mode='val')
+                loss_val, _, _,_ = self.train_evaluate_epoch(val_loader, mode='val')
                 if self.early_stopper.early_stop(loss_val.detach()) or (t + 1) == self.epochs:
                     test_data, test_loader = self.load_data(self.seed + k + 2, mode = "test")
-                    _, mmde_mult_conditional, mmde_mean_conditional = self.train_evaluate_epoch(test_loader, mode='test')
+                    _, mmde_mult_conditional, mmde_mean_conditional, log_mmde = self.train_evaluate_epoch(test_loader, mode='test')
                     mmdes_mult.append(mmde_mult_conditional.item())
                     mmdes_mean.append(mmde_mean_conditional.item())
+                    log_mmdes.append(log_mmde.item())
                     mmde_mult = np.prod(np.array(mmdes_mult[self.T:])) if k >= self.T else 1
                     mmde_mean = np.prod(np.array(mmdes_mean[self.T:])) if k >= self.T else 1
-                    self.log({"aggregated_test_eval_mult": mmde_mult, "aggregated_test_eval_mean": mmde_mean})
+                    log_mmdes_a = np.sum(np.array(log_mmdes[self.T:])) if k >= self.T else 0
+                    self.log({"aggregated_test_eval_mult": mmde_mult, "aggregated_test_eval_mean": mmde_mean, "aggregated_test_eval_log": log_mmdes_a})
                     train_data = ConcatDataset([train_data, val_data])
                     val_data = test_data
                     train_loader = DataLoader(train_data, batch_size=self.bs, shuffle=True)
@@ -115,6 +117,9 @@ class Trainer:
             if mmde_mean > (1. / self.alpha):
                 logging.info("Reject null at %f", mmde_mean)
                 self.log({"steps_mean": k})
+            if log_mmdes_a > np.log(1. / self.alpha):
+                logging.info("Reject null at %f", log_mmdes_a)
+                self.log({"steps_log": k})
 
         if self.save:
             import os
