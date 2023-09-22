@@ -112,8 +112,8 @@ class Trainer:
             if mmde_mult > (1. / self.alpha):
                 logging.info("Reject null at %f", mmde_mult)
                 self.log({"steps_mult": k})
-            if mmde_mult > (1. / self.alpha):
-                logging.info("Reject null at %f", mmde_mult)
+            if mmde_mean > (1. / self.alpha):
+                logging.info("Reject null at %f", mmde_mean)
                 self.log({"steps_mean": k})
 
         if self.save:
