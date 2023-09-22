@@ -5,7 +5,7 @@ import numpy as np
 import logging
 from torch.utils.data import DataLoader, ConcatDataset
 import wandb
-
+import pickle
 from models import EarlyStopper
 
 
@@ -42,6 +42,8 @@ class Trainer:
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr=self.lr)
         self.early_stopper = EarlyStopper(patience=self.patience, min_delta=self.delta)
         self.bs = cfg.batch_size
+        self.save = cfg.save
+        self.save_dir = cfg.save_dir
 
     def log(self, logs):
         """Log metrics for visualization and monitoring."""
@@ -107,7 +109,12 @@ class Trainer:
             if mmde > (1. / self.alpha):
                 logging.info("Reject null at %f", mmde)
                 self.log({"steps": k})
-                return k
+
+        if self.save:
+            import os
+            if not os.path.exists(self.save_dir):
+                os.makedirs(self.save_dir)
+            pickle.dump(mmdes, open(self.save_dir + f"mmdes_{self.data_seed}.pkl", "wb"))
 
 
 

@@ -1,5 +1,3 @@
-import os
-os.environ['KMP_DUPLICATE_LIB_OK']='TRUE'
 import torch
 import numpy as np
 import hydra

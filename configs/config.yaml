@@ -38,8 +38,10 @@ train:
   earlystopping:
     patience: 20
     delta: 0.0
-  epochs: 1000
+  epochs: 10
   seqs: 1 # number of mini-batches
   T: 0 #Warm start number of mini-batches used for the training only
   alpha: 0.05 # significance level
   batch_size: 900
+  save: true
+  save_dir: "path/to/deep-anytime-testing/logs/blob/2st/"
