@@ -80,7 +80,7 @@ class BlobData(DatasetOperator): # TODO: the code works only for two dimensions 
         elif type == "type12":
             _, Z = sample_D_blobs(samples, sigma_mx_2, rs=seed)
             X = torch.from_numpy(Z)
-            _, Z = sample_D_blobs(samples, sigma_mx_2, rs=10000*seed + 1)
+            _, Z = sample_D_blobs(samples, sigma_mx_2, rs=10000*(seed + 1))
             Y = torch.from_numpy(Z)
         self.x = X.float()
         self.y = Y.float()
