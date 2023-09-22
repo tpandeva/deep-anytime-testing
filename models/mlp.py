@@ -92,6 +92,6 @@ class MMDEMLP(MLP):
         g_y = self.model(y) if self.full_dim else self.model(y[:, :self.input_size])
 
         # Compute final output
-        output = 2 * torch.log(1 + self.sigma(g_x - g_y))
+        output = torch.log(1 + self.sigma(g_x - g_y))
 
         return output

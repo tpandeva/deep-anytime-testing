@@ -38,5 +38,5 @@ class RotCNN(CNN):
 
         g_x = self.fc(out_x)
         g_y = self.fc(out_y)
-        output = 2 * torch.log(1 + self.sigma(g_x - g_y))
+        output = torch.log(1 + self.sigma(g_x - g_y))
         return output
