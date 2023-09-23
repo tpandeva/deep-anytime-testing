@@ -8,7 +8,7 @@ class MLP(nn.Module):
     A multi-layer perceptron (MLP) with ReLU activation function and optional batch normalization and dropout layers.
     """
 
-    def __init__(self, input_size, hidden_layer_size, output_size, batch_norm=True, drop_out=True, p=0.3, bias=False):
+    def __init__(self, input_size, hidden_layer_size, output_size, layer_norm=True, drop_out=True, p=0.3, bias=False):
         super(MLP, self).__init__()
 
         layers = []
@@ -18,7 +18,7 @@ class MLP(nn.Module):
         if isinstance(hidden_layer_size, (list, ListConfig)):
             for out_features in hidden_layer_size:
                 layers.append(nn.Linear(in_features, out_features, bias=bias))
-                if batch_norm:
+                if layer_norm:
                     layers.append(nn.LayerNorm(out_features))
                 layers.append(nn.ReLU())
                 if drop_out:
