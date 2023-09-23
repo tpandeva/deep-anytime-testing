@@ -1,5 +1,3 @@
-from abc import abstractmethod
-from abc import ABC
 import torch
 import numpy as np
 import logging
@@ -7,9 +5,6 @@ from torch.utils.data import DataLoader, ConcatDataset
 import wandb
 import pickle
 from models import EarlyStopper
-
-
-
 class Trainer:
     """
     Trainer class encapsulates the training, evaluation, and logging processes for a neural network.
@@ -54,6 +49,176 @@ class Trainer:
     def train_evaluate_epoch(self, loader, mode="train"):
         """Train/Evaluate the model for one epocj and log the results."""
         aggregated_loss = 0
+        mmde = 1
+        num_samples = len(loader.dataset)
+        for i, (z, tau_z) in enumerate(loader):
+            z = z.to(self.device)
+            tau_z = tau_z.to(self.device)
+            if mode == "train":
+                self.net = self.net.train()
+                out = self.net(z,tau_z)
+            else:
+                self.net = self.net.eval()
+                out = self.net(z, tau_z).detach()
+            loss = -out.mean()
+            aggregated_loss +=-out.sum()
+            mmde *= torch.exp(out.sum())
+            if mode == "train":
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+        self.log({f"{mode}_e-value": mmde.item(), f"{mode}_loss": aggregated_loss.item()/num_samples})
+        return aggregated_loss/num_samples, mmde
+
+    def load_data(self, seed, mode= "train"):
+        """Load data using the datagen object and return a DataLoader object."""
+        data = self.datagen.generate(seed, self.tau1, self.tau2)
+        if mode in ["train", "val"]:
+            data_loader = DataLoader(data, batch_size=self.bs, shuffle=True)
+        else: data_loader = DataLoader(data, batch_size=len(data), shuffle=True)
+        return data, data_loader
+
+    def train(self):
+        """Train the model for a specified number of sequences, epochs, and apply early stopping if required."""
+        torch.manual_seed(self.seed)
+        np.random.seed(self.seed)
+        train_data, train_loader = self.load_data(self.seed, mode = "train")
+        val_data, val_loader = self.load_data(self.seed + 1, mode = "val")
+        mmdes = []
+        for k in range(self.seqs):
+
+            for t in range(self.epochs):
+                self.train_evaluate_epoch(train_loader)
+                loss_val, _ = self.train_evaluate_epoch(val_loader, mode='val')
+                if self.early_stopper.early_stop(loss_val.detach()) or (t + 1) == self.epochs:
+                    test_data, test_loader = self.load_data(self.seed + k + 2, mode = "test")
+                    _, mmde_conditional = self.train_evaluate_epoch(test_loader, mode='test')
+                    mmdes.append(mmde_conditional.item())
+                    mmde = np.prod(np.array(mmdes[self.T:])) if k >= self.T else 1
+                    self.log({"aggregated_test_e-value": mmde})
+                    train_data = ConcatDataset([train_data, val_data])
+                    val_data = test_data
+                    train_loader = DataLoader(train_data, batch_size=self.bs, shuffle=True)
+                    val_loader = DataLoader(val_data, batch_size=self.bs, shuffle=True)
+                    self.log({"iterations": t})
+                    break
+            self.early_stopper.reset()
+            if mmde > (1. / self.alpha):
+                logging.info("Reject null at %f", mmde)
+                self.log({"steps_mult": k})
+
+        if self.save:
+            import os
+            if not os.path.exists(self.save_dir):
+                os.makedirs(self.save_dir)
+            pickle.dump(mmdes, open(self.save_dir + f"mmdes_{self.data_seed}.pkl", "wb"))
+
+class TrainerC2ST(Trainer):
+    """
+    Trainer class encapsulates the training, evaluation, and logging processes for a neural network.
+
+    Attributes:
+        Several attributes are initialized from the configuration object, `cfg`, such as learning rate (`lr`),
+        number of epochs (`epochs`), patience for early stopping (`patience`), and others.
+        net: Neural network model to be trained.
+        operator: Operator used to compute transformations on input data.
+        datagen: Data generator used to produce training, validation, and test datasets.
+        device: Device (CPU/GPU) on which computations will be performed.
+    """
+
+    def __init__(self, cfg, net, tau1, tau2, datagen, device, data_seed):
+        """Initializes the Trainer object with the provided configurations and parameters."""
+        super().__init__(cfg, net, tau1, tau2, datagen, device, data_seed)
+        self.loss = torch.nn.CrossEntropyLoss()
+
+    def e_c2st(self, y, logits):
+
+        # H0
+        # p(y|x) of MLE under H0: p(y|x) = p(y), is just the empirical frequency of y in the test data.
+        emp_freq_class0 = 1 - (y[y == 1]).sum() / y.shape[0]
+        emp_freq_class1 = (y[y == 1]).sum() / y.shape[0]
+
+        # H1
+        # Probabilities under empirical model (using train data)
+        f = torch.nn.Softmax()
+        prob = f(logits)
+        pred_prob_class0 = prob[:, 0]
+        pred_prob_class1 = prob[:, 1]
+        log_eval = torch.sum(y * torch.log(pred_prob_class1 / emp_freq_class1) + (1 - y) * torch.log(
+            pred_prob_class0 / emp_freq_class0)).double()
+        eval = torch.exp(log_eval)
+        # E-value
+        return eval
+    def s_c2st(self, y, logits, n_per=1000):
+        y_hat = torch.argmax(logits, dim=1)
+        n = y.shape[0]
+        accuracy = torch.sum(y == y_hat) / n
+        stats = np.zeros(n_per)
+        for r in range(n_per):
+            ind = np.random.choice(n, n, replace=False)
+            # divide into new X, Y
+            y_perm = y.clone()[ind]
+            # compute accuracy
+            stats[r] = torch.sum(y_perm == y_hat) / y.shape[0]
+        sorted_stats = np.sort(stats)
+        p_val = np.sum(sorted_stats > accuracy.item()) / n_per
+        return p_val
+
+    def train_evaluate_epoch(self, loader, mode="train"):
+        """Train/Evaluate the model for one epocj and log the results."""
+        aggregated_loss = 0
+        e_val = 1
+        num_samples = len(loader.dataset)
+        for i, (z, tau_z) in enumerate(loader):
+            samples, features,_ = z.shape
+            z = z.to(self.device)
+            z = z.transpose(2, 1).flatten(0).view(2*num_samples,-1)[...,:-1]
+            tau_z = tau_z.to(self.device)
+            tau_z = tau_z.transpose(2, 1).flatten(0).view(2*num_samples,-1)[...,-1]
+            if mode == "train":
+                self.net = self.net.train()
+                out = self.net(z)
+            else:
+                self.net = self.net.eval()
+                out = self.net(z).detach()
+            loss = self.loss(out, tau_z.long())
+            aggregated_loss +=out.sum()
+            # compute e-c2st and s-c2st
+            e_val *= self.e_c2st(tau_z, out)
+            p_val = self.s_c2st(tau_z, out)
+            if mode == "train":
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+        self.log({f"{mode}_e-value": e_val.item(),f"{mode}_p-value": p_val.item(), f"{mode}_loss": aggregated_loss.item()/num_samples})
+        return aggregated_loss/num_samples, e_val
+
+
+
+
+
+
+class TrainerMMDE(Trainer):
+    """
+    Trainer class encapsulates the training, evaluation, and logging processes for a neural network.
+
+    Attributes:
+        Several attributes are initialized from the configuration object, `cfg`, such as learning rate (`lr`),
+        number of epochs (`epochs`), patience for early stopping (`patience`), and others.
+        net: Neural network model to be trained.
+        operator: Operator used to compute transformations on input data.
+        datagen: Data generator used to produce training, validation, and test datasets.
+        device: Device (CPU/GPU) on which computations will be performed.
+    """
+
+    def __init__(self, cfg, net, tau1, tau2, datagen, device, data_seed):
+        """Initializes the Trainer object with the provided configurations and parameters."""
+        super().__init__(cfg, net, tau1, tau2, datagen, device, data_seed)
+
+
+    def train_evaluate_epoch(self, loader, mode="train"):
+        """Train/Evaluate the model for one epocj and log the results."""
+        aggregated_loss = 0
         mmde_mult, mmde_mean = 1,0
         num_samples = len(loader.dataset)
         for i, (z, tau_z) in enumerate(loader):
@@ -76,13 +241,6 @@ class Trainer:
         self.log({f"{mode}_eval_mult": mmde_mult.item(),f"{mode}_eval_log": -aggregated_loss.item(),f"{mode}_eval_mean": mmde_mean.item(), f"{mode}_loss": aggregated_loss.item()/num_samples})
         return aggregated_loss/num_samples, mmde_mult, mmde_mean, -aggregated_loss
 
-    def load_data(self, seed, mode= "train"):
-        """Load data using the datagen object and return a DataLoader object."""
-        data = self.datagen.generate(seed, self.tau1, self.tau2)
-        if mode in ["train", "val"]:
-            data_loader = DataLoader(data, batch_size=self.bs, shuffle=True)
-        else: data_loader = DataLoader(data, batch_size=len(data), shuffle=True)
-        return data, data_loader
 
     def train(self):
         """Train the model for a specified number of sequences, epochs, and apply early stopping if required."""

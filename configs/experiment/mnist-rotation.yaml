@@ -1,47 +1,44 @@
+# @package _global_
 defaults:
   - data: rotatedmnist
   - model: rotcnn
   - operator@tau1:
       - projection
+      - reshape
       - rotation
   - operator@tau2:
       - swap
       - projection
+      - reshape
       - rotation
   - override hydra/job_logging: colorlog
   - override hydra/hydra_logging: colorlog
 
-project: "MNIST-transforms"
+project: "MNIST-Rotation"
 seed: 0
 
 tau1:
   projection:
     input_dim: 0
-  resize:
-    _target_: "torch.transforms.Resize"
-    size: [1, 28, 28 ]
   rotation:
     num_rotations: 8
 
 tau2:
   swap:
-    p: ${eval:28 * 28} # size of the image when flattened
+    p: 784 # size of the image when flattened
     d: 0
   projection:
     input_dim: 0
-  resize:
-    _target_: "torch.transforms.Resize"
-    size: [1, 28, 28]
   rotation:
     num_rotations: 8
 
 
 data:
   samples: 100
-  type: "type2"
+  type: "type11"
   data_seed: 0
-  file1: "/Users/teddy/Downloads/mnist_rotation_new/mnist_all_rotation_normalized_float_test.amat"
-  file2: "/Users/teddy/Downloads/mnist_rotation_new/mnist_all_rotation_normalized_float_test.amat"
+  file1: "/var/scratch/tpandeva/deep-anytime-testing/mnist_rotation_new/mnist_9_rotation_normalized_float_test.amat"
+  file2: "/var/scratch/tpandeva/deep-anytime-testing/mnist_rotation_new/mnist_9_rotation_normalized_float_test.amat"
 
 
 
@@ -52,7 +49,9 @@ train:
     patience: 20
     delta: 0.0
   epochs: 1000
-  seqs: 1 # number of mini-batches
+  seqs: 10 # number of mini-batches
   T: 0 #Warm start number of mini-batches used for the training only
   alpha: 0.05 # significance level
   batch_size: 64
+  save: false
+  save_dir: ""

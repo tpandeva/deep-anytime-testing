@@ -1,3 +1,4 @@
+# @package _global_
 defaults:
   - data: blob
   - model: mlp
@@ -10,7 +11,7 @@ defaults:
   - override hydra/hydra_logging: colorlog
 
 project: "BLOB-2ST"
-seed: 0
+
 
 tau1:
   projection:
@@ -25,20 +26,25 @@ tau2:
 
 model:
   input_size: 2
+  hidden_layer_size: [30, 30]
 
 data:
-  samples: 900
+  data_seed: 0
+  samples: 90
   type: "type2"
   with_labels: false
 
 
 train:
+  seed: 0
   lr: 0.0005
   earlystopping:
-    patience: 20
+    patience: 10
     delta: 0.0
-  epochs: 1000
+  epochs: 500
   seqs: 1 # number of mini-batches
   T: 0 #Warm start number of mini-batches used for the training only
   alpha: 0.05 # significance level
-  batch_size: 900
+  batch_size: 90
+  save: false
+  save_dir: ""
