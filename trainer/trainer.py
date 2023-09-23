@@ -172,9 +172,9 @@ class TrainerC2ST(Trainer):
         for i, (z, tau_z) in enumerate(loader):
             samples, features,_ = z.shape
             z = z.to(self.device)
-            z = z.transpose(2, 1).flatten(0).view(2*num_samples,-1)[...,:-1]
+            z = z.transpose(2, 1).flatten(0).view(2*samples,-1)[...,:-1]
             tau_z = tau_z.to(self.device)
-            tau_z = tau_z.transpose(2, 1).flatten(0).view(2*num_samples,-1)[...,-1]
+            tau_z = tau_z.transpose(2, 1).flatten(0).view(2*samples,-1)[...,-1]
             if mode == "train":
                 self.net = self.net.train()
                 out = self.net(z)
