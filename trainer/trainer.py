@@ -170,7 +170,6 @@ class TrainerC2ST(Trainer):
         e_val = 1
         num_samples = len(loader.dataset)
         for i, (z, tau_z) in enumerate(loader):
-            samples, features,_ = z.shape
             z = z.to(self.device)
             # z = z.transpose(2, 1).flatten(0).view(2*samples,-1)[...,:-1]
             tau_z = tau_z.to(self.device)
@@ -181,14 +180,15 @@ class TrainerC2ST(Trainer):
                 out2 = self.net(tau_z)
             else:
                 self.net = self.net.eval()
-                out = self.net(z).detach()
                 out1 = self.net(z)
                 out2 = self.net(tau_z)
-            loss = 0.5*( self.loss(out1, torch.ones((z.shape[0], 1)))+self.loss(out2, torch.zeros((z.shape[0], 1))))
+            out = torch.concat((out1,out2))
+            labels = torch.concat((torch.ones((z.shape[0], 1)),torch.zeros((z.shape[0], 1)))).squeeze(1).long().to(self.device)
+            loss =  self.loss(out, labels)
             aggregated_loss +=loss
             # compute e-c2st and s-c2st
-            e_val *= self.e_c2st(tau_z, out)
-            p_val = self.s_c2st(tau_z, out)
+            e_val *= self.e_c2st(labels, out)
+            p_val = self.s_c2st(labels, out)
             if mode == "train":
                 self.optimizer.zero_grad()
                 loss.backward()

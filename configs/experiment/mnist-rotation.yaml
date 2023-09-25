@@ -1,18 +1,17 @@
 # @package _global_
 defaults:
-  - data: rotatedmnist
-  - model: rotcnnmmde
-  - operator@tau1:
+  - /data: rotatedmnist
+  - /model: rotcnnmmde
+  - /operator@tau1:
       - projection
       - reshape
       - rotation
-  - operator@tau2:
+  - /operator@tau2:
       - swap
       - projection
       - reshape
       - rotation
-  - override hydra/job_logging: colorlog
-  - override hydra/hydra_logging: colorlog
+
 
 project: "MNIST-Rotation-MMDE"
 seed: 0
@@ -37,16 +36,15 @@ data:
   samples: 100
   type: "type11"
   data_seed: 0
-  file1: "/var/scratch/tpandeva/deep-anytime-testing/mnist_rotation_new/mnist_9_rotation_normalized_float_test.amat"
-  file2: "/var/scratch/tpandeva/deep-anytime-testing/mnist_rotation_new/mnist_9_rotation_normalized_float_test.amat"
-
+  file1: "path/to/mnist_rotation_new/mnist_9_rotation_normalized_float_test.amat"
+  file2: "path/to/mnist_rotation_new/mnist_6_rotation_normalized_float_test.amat"
 
 
 train:
   seed: 0
   lr: 0.0005
   earlystopping:
-    patience: 20
+    patience: 5
     delta: 0.0
   epochs: 1000
   seqs: 10 # number of mini-batches
