@@ -105,7 +105,7 @@ class Trainer:
             self.early_stopper.reset()
             if mmde > (1. / self.alpha):
                 logging.info("Reject null at %f", mmde)
-                self.log({"steps_mult": k})
+                self.log({"steps": k})
 
         if self.save:
             import os
@@ -129,7 +129,7 @@ class TrainerC2ST(Trainer):
     def __init__(self, cfg, net, tau1, tau2, datagen, device, data_seed):
         """Initializes the Trainer object with the provided configurations and parameters."""
         super().__init__(cfg, net, tau1, tau2, datagen, device, data_seed)
-        self.loss = torch.nn.CrossEntropyLoss()
+        self.loss = torch.nn.CrossEntropyLoss(reduction='sum')
 
     def e_c2st(self, y, logits):
 
@@ -172,17 +172,20 @@ class TrainerC2ST(Trainer):
         for i, (z, tau_z) in enumerate(loader):
             samples, features,_ = z.shape
             z = z.to(self.device)
-            z = z.transpose(2, 1).flatten(0).view(2*samples,-1)[...,:-1]
+            # z = z.transpose(2, 1).flatten(0).view(2*samples,-1)[...,:-1]
             tau_z = tau_z.to(self.device)
-            tau_z = tau_z.transpose(2, 1).flatten(0).view(2*samples,-1)[...,-1]
+            # tau_z = tau_z.transpose(2, 1).flatten(0).view(2*samples,-1)[...,-1]
             if mode == "train":
                 self.net = self.net.train()
-                out = self.net(z)
+                out1 = self.net(z)
+                out2 = self.net(tau_z)
             else:
                 self.net = self.net.eval()
                 out = self.net(z).detach()
-            loss = self.loss(out, tau_z.long())
-            aggregated_loss +=out.sum()
+                out1 = self.net(z)
+                out2 = self.net(tau_z)
+            loss = 0.5*( self.loss(out1, torch.ones((z.shape[0], 1)))+self.loss(out2, torch.zeros((z.shape[0], 1))))
+            aggregated_loss +=loss
             # compute e-c2st and s-c2st
             e_val *= self.e_c2st(tau_z, out)
             p_val = self.s_c2st(tau_z, out)

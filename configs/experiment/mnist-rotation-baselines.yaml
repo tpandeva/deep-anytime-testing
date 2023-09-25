@@ -1,7 +1,7 @@
 # @package _global_
 defaults:
   - data: rotatedmnist
-  - model: rotcnnmmde
+  - model: rotcnn
   - operator@tau1:
       - projection
       - reshape
@@ -13,8 +13,9 @@ defaults:
       - rotation
   - override hydra/job_logging: colorlog
   - override hydra/hydra_logging: colorlog
-
-project: "MNIST-Rotation-MMDE"
+model:
+  output_size: 2
+project: "MNIST-Rotation-Baselines"
 seed: 0
 
 tau1:
