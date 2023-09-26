@@ -5,8 +5,8 @@ defaults:
   - /operator@tau1:
       - net
 
-project: "Cifar10-AA"
-seed: 0
+project: "Cifar10-AA-MMDE"
+
 
 tau1:
   net:
@@ -16,15 +16,20 @@ tau2: null
 
 model:
   input_size: 10
+  output_size: 1
+  hidden_layer_size: [32,32]
+  layer_norm: true
 
 data:
-  file: "data/cifar10/cifar10/"
-  file_to_model: "data/cifar10/best_model.pth"
+  data_seed: 0
+  file: "/var/scratch/tpandeva/deep-anytime-testing/data/cifar10/cifar10/"
+  file_to_model: "/var/scratch/tpandeva/deep-anytime-testing/data/cifar10/best_model.pth"
 
 train:
+  seed: 0
   lr: 0.0005
   earlystopping:
-    patience: 20
+    patience: 5
     delta: 0.0
   epochs: 1000
   seqs: 1 # number of mini-batches

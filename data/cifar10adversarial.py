@@ -41,18 +41,18 @@ class Cifar10Adversarial(DatasetOperator):
         return adversarial_images
 
 class Cifar10AdversarialDataGen(DataGenerator):
-    def __init__(self, samples,  file, epsilon, model, file_to_model):
-        super().__init__(None, samples)
+    def __init__(self, samples,  data_seed, file, epsilon, model, file_to_model, download):
+        super().__init__("type2", samples, data_seed)
 
         transform_test = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
         ])
         self.z = torchvision.datasets.CIFAR10(root=file, train=False,
-                                                download=True, transform=transform_test)
+                                                download=download, transform=transform_test)
         total_samples = len(self.z)
         num_chunks = int(total_samples / samples)
-        self.index_sets_seq = np.array_split(range(total_samples), num_chunks)
+        self.index_sets_seq = np.array_split(np.random.permutation(total_samples), num_chunks)
         self.epsilon = epsilon
         self.model = model
         checkpoint = torch.load(file_to_model, map_location=torch.device('cpu'))

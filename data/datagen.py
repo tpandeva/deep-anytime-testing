@@ -5,7 +5,7 @@ import numpy as np
 
 class DataGenerator(ABC):
     def __init__(self, type, samples,data_seed):
-        assert type in ["type2", "type11", "type12"]
+        assert type in ["type2", "type11", "type12", "type1"]
         assert samples > 0
         torch.manual_seed(data_seed)
         np.random.seed(data_seed)
