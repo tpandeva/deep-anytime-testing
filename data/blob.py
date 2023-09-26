@@ -75,12 +75,12 @@ class BlobData(DatasetOperator): # TODO: the code works only for two dimensions 
         elif type == "type11":
             Z, _ = sample_D_blobs(samples, sigma_mx_2, rs=seed)
             X = torch.from_numpy(Z)
-            Z, _ = sample_D_blobs(samples, sigma_mx_2, rs=seed + 1)
+            Z, _ = sample_D_blobs(samples, sigma_mx_2, rs=10000*(seed + 1))
             Y = torch.from_numpy(Z)
         elif type == "type12":
             _, Z = sample_D_blobs(samples, sigma_mx_2, rs=seed)
             X = torch.from_numpy(Z)
-            _, Z = sample_D_blobs(samples, sigma_mx_2, rs=seed + 1)
+            _, Z = sample_D_blobs(samples, sigma_mx_2, rs=10000*(seed + 1))
             Y = torch.from_numpy(Z)
         self.x = X.float()
         self.y = Y.float()
@@ -95,9 +95,9 @@ class BlobData(DatasetOperator): # TODO: the code works only for two dimensions 
 
 
 class BlobDataGen(DataGenerator):
-    def __init__(self, type, samples, r, d, rho, with_labels):
-        super().__init__(type, samples)
-        self.type, self.samples, self.r, self.d, self.rho, self.with_labels = type, samples, r, d, rho, with_labels
+    def __init__(self, type, samples, data_seed, r, d, rho, with_labels):
+        super().__init__(type, samples, data_seed)
+        self.type, self.samples, self.data_seed, self.r, self.d, self.rho, self.with_labels = type, samples, data_seed, r, d, rho, with_labels
     def generate(self, seed, tau1, tau2) ->Dataset:
         return BlobData(self.type, self.samples,self.r, self.d,
-                        self.rho, self.with_labels, seed, tau1, tau2)
+                        self.rho, self.with_labels, (self.data_seed+1)*100+seed, tau1, tau2)

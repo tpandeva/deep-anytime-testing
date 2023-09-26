@@ -21,7 +21,7 @@ class CNN(nn.Module):
         x = self.fc(x)
         return x
 
-class RotCNN(CNN):
+class RotCNNMMDE(CNN):
     def __init__(self, input_size, output_size):
         super().__init__(input_size, output_size)
         self.sigma = torch.nn.Tanh()
@@ -38,5 +38,22 @@ class RotCNN(CNN):
 
         g_x = self.fc(out_x)
         g_y = self.fc(out_y)
-        output = 2 * torch.log(1 + self.sigma(g_x - g_y))
+        output = torch.log(1 + self.sigma(g_x - g_y))
         return output
+
+class RotCNN(CNN):
+    def __init__(self, input_size, output_size):
+        super().__init__(input_size, output_size)
+        self.sigma = torch.nn.Tanh()
+
+    def forward(self, x):
+
+        num_rotations = x.shape[1] if len(x.shape) == 5 else 1
+        out_x, out_y = 0, 0
+        for i in range(num_rotations):
+            x_conv = self.conv(x[:,i,...])
+            out_x += torch.flatten(x_conv, 1)
+
+        g_x = self.fc(out_x)
+
+        return g_x

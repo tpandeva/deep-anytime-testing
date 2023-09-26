@@ -1,0 +1,57 @@
+# @package _global_
+defaults:
+  - /data: rotatedmnist
+  - /model: rotcnn
+  - /operator@tau1:
+      - projection
+      - reshape
+      - rotation
+  - /operator@tau2:
+      - swap
+      - projection
+      - reshape
+      - rotation
+
+model:
+  output_size: 2
+project: "MNIST-Rotation-Baselines"
+seed: 0
+
+tau1:
+  projection:
+    input_dim: 0
+  rotation:
+    num_rotations: 8
+
+tau2:
+  swap:
+    p: 784 # size of the image when flattened
+    d: 0
+  projection:
+    input_dim: 0
+  rotation:
+    num_rotations: 8
+
+
+data:
+  samples: 100
+  type: "type11"
+  data_seed: 0
+  file1: "path/to/mnist_rotation_new/mnist_9_rotation_normalized_float_test.amat"
+  file2: "path/to/mnist_rotation_new/mnist_6_rotation_normalized_float_test.amat"
+
+
+
+train:
+  seed: 0
+  lr: 0.0005
+  earlystopping:
+    patience: 5
+    delta: 0.0
+  epochs: 1000
+  seqs: 10 # number of mini-batches
+  T: 0 #Warm start number of mini-batches used for the training only
+  alpha: 0.05 # significance level
+  batch_size: 64
+  save: false
+  save_dir: ""

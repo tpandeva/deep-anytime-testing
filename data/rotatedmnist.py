@@ -12,8 +12,8 @@ class MnistRotDataset(DatasetOperator):
         self.z = z
 
 class RotatedMnistDataGen(DataGenerator):
-    def __init__(self, type, samples,  file1, file2):
-        super().__init__(type, samples)
+    def __init__(self, type, samples, data_seed, file1, file2):
+        super().__init__(type, samples, data_seed)
         if type == "type12":
             file1 = file2
         if type == "type11":
@@ -25,9 +25,11 @@ class RotatedMnistDataGen(DataGenerator):
         np.random.shuffle(data2)
         self.X = torch.tensor(data1[:, :-1].astype(np.float32))
         self.Y = torch.tensor(data2[:, :-1].astype(np.float32))
-        self.z = torch.stack([self.X, self.Y], dim=2)
+
         total_samples = min(self.X.shape[0], self.Y.shape[0])
+        self.z = torch.stack([self.X[:total_samples, ...], self.Y[:total_samples, ...]], dim=2)
         num_chunks = int(total_samples / samples)
+
         self.index_sets_seq = np.array_split(range(total_samples), num_chunks)
 
     def generate(self,seed, tau1, tau2) -> Dataset:

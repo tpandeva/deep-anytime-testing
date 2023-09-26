@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import hydra
-from trainer import Trainer
+from trainer import TrainerC2ST
 from omegaconf import DictConfig, OmegaConf
 import wandb
 from hydra.utils import instantiate
@@ -42,7 +42,7 @@ def train_pipeline(cfg: DictConfig):
     wandb.watch(net)
 
     # initialize the trainer object and fit the network to the task
-    trainer = Trainer(cfg.train, net, tau1, tau2, datagen, device, cfg.data.data_seed)
+    trainer = TrainerC2ST(cfg.train, net, tau1, tau2, datagen, device, cfg.data.data_seed)
     trainer.train()
 
 

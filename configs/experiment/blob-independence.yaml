@@ -1,36 +1,30 @@
+# @package _global_
 defaults:
   - data: blob
   - model: mlp
-  - operator@tau1:
-      - projection
   - operator@tau2:
       - swap
-      - projection
   - override hydra/job_logging: colorlog
   - override hydra/hydra_logging: colorlog
 
-project: "BLOB-2ST"
+project: "BLOB-transforms"
 seed: 0
 
-tau1:
-  projection:
-    input_dim: 0
+tau1: null
 
 tau2:
   swap:
-    p: 2
-    d: 0
-  projection:
-    input_dim: 0
+    p: 3
+    d: 2
 
 model:
-  input_size: 2
+  input_size: 6
+  hidden_layer_size: [50, 50]
 
 data:
-  samples: 900
+  samples: 2700
   type: "type2"
-  with_labels: false
-
+  with_labels: true
 
 train:
   lr: 0.0005
@@ -41,4 +35,7 @@ train:
   seqs: 1 # number of mini-batches
   T: 0 #Warm start number of mini-batches used for the training only
   alpha: 0.05 # significance level
-  batch_size: 900
+  batch_size: 90
+
+
+
