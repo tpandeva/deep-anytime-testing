@@ -1,6 +1,6 @@
 # @package _global_
 defaults:
-  - data: blob
+  - data: gaussiancit
   - model: mlp
   - operator@tau1:
       - projection
@@ -9,7 +9,7 @@ defaults:
       - projection
 
 
-project: "BLOB-2ST"
+project: "Gaussian-CIT"
 
 
 tau1:

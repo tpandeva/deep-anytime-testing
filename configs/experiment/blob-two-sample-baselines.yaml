@@ -3,9 +3,6 @@ defaults:
   - data: blob
   - model: mlp
 
-  - override hydra/job_logging: colorlog
-  - override hydra/hydra_logging: colorlog
-
 project: "BLOB-2ST-E-C2ST,S-C2ST"
 
 tau1: null

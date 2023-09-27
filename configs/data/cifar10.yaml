@@ -7,3 +7,4 @@ model:
   num_classes: 10
 file_to_model: "file/to/model.pth"
 download: false
+data_seed: 0

@@ -1,0 +1,40 @@
+# @package _global_
+defaults:
+  - /data: cifar10
+  - /operator@tau1:
+      - net
+
+project: "Cifar10-AA-Baselines"
+
+
+tau1:
+  net:
+    file_to_model: "/var/scratch/tpandeva/deep-anytime-testing/data/cifar10/best_model.pth"
+
+tau2: null
+
+model:
+  _target_: "models.mlp.MLP"
+  input_size: 10
+  output_size: 2
+  hidden_layer_size: [32,32]
+  layer_norm: true
+
+data:
+  data_seed: 0
+  file: "/var/scratch/tpandeva/deep-anytime-testing/data/cifar10/cifar10/"
+  file_to_model: "/var/scratch/tpandeva/deep-anytime-testing/data/cifar10/best_model.pth"
+
+train:
+  seed: 0
+  lr: 0.0005
+  earlystopping:
+    patience: 5
+    delta: 0.0
+  epochs: 1000
+  seqs: 1 # number of mini-batches
+  T: 0 #Warm start number of mini-batches used for the training only
+  alpha: 0.05 # significance level
+  batch_size: 64
+  save: false
+  save_dir: ""

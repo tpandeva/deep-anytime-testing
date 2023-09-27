@@ -5,3 +5,4 @@ r: 3 # blobs per axis, DON'T CHANGE FOR NOW
 d: 2 # number of axes, DON'T CHANGE FOR NOW
 rho: 0.03 # std dev for the second class
 with_labels: true
+data_seed: 0

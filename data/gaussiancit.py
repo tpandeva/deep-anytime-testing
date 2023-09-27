@@ -58,8 +58,8 @@ class GaussianCIT(DatasetOperator):
         self.z = torch.stack([Z, Z_tilde], dim=2)
 
 class GaussianCITGen(DataGenerator):
-    def __init__(self, type, samples, data_seed, r, d, rho, with_labels):
+    def __init__(self, type, samples, data_seed):
         super().__init__(type, samples, data_seed)
-        self.type, self.samples, self.data_seed, self.r, self.d, self.rho, self.with_labels = type, samples, data_seed, r, d, rho, with_labels
+        self.type, self.samples, self.data_seed= type, samples, data_seed
     def generate(self, seed, tau1, tau2) ->Dataset:
         return GaussianCIT(self.type, self.samples, (self.data_seed+1)*100+seed, tau1, tau2)

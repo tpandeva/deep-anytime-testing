@@ -1,11 +1,10 @@
 # @package _global_
 defaults:
-  - data: blob
-  - model: mlp
-  - operator@tau2:
+  - /data: blob
+  - /model: mlp
+  - /operator@tau2:
       - swap
-  - override hydra/job_logging: colorlog
-  - override hydra/hydra_logging: colorlog
+
 
 project: "BLOB-transforms"
 seed: 0

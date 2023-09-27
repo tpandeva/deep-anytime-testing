@@ -5,9 +5,12 @@ from sklearn.linear_model import LassoCV, Lasso
 from warnings import simplefilter
 from data import get_cit_data
 from sklearn.exceptions import ConvergenceWarning
+
 simplefilter("ignore", category=ConvergenceWarning)
 import os
 import pickle
+
+
 def get_data_statistics(X):
     mu = np.mean(X, axis=0)
     sigma = np.cov(X.T)
@@ -82,6 +85,7 @@ def sample_hiv_data(X, j, clf):
     X_tilde[:, j] = Xj_tilde.ravel()
     return X_tilde
 
+
 class BettingFunction(Enum):
     sign = lambda a, b: np.sign(b - a)
     tanh = lambda a, b: np.tanh(20 * (b - a) / np.max((a, b)))
@@ -121,7 +125,7 @@ def lasso_cv_online_learning(X, y, models_dict, val_prcg=0.2):
     :param val_prcg: The percentage of data to be used for validation.
     :return: The regularization constant of the model that got the best score on the validation data.
     """
-    train_idx = int(len(y) * (1-val_prcg))
+    train_idx = int(len(y) * (1 - val_prcg))
     X_train = X[:train_idx, :]
     y_train = y[:train_idx]
     X_val = X[train_idx:, :]
@@ -136,7 +140,6 @@ def lasso_cv_online_learning(X, y, models_dict, val_prcg=0.2):
             best_alpha = alpha
             score = model_score
     return best_alpha
-
 
 
 class EcrtTester:
@@ -261,7 +264,7 @@ class EcrtTester:
             q_tilde = self.test_statistic(y_tilde.ravel(), y[test_idx:test_idx + batch].ravel())
             wealth += self.g_func(q, q_tilde)
         # Update the martingales using the average betting score.
-        St_v = St_v * (1 + self.integral_vector * wealth/self.K)
+        St_v = St_v * (1 + self.integral_vector * wealth / self.K)
         St = np.mean(St_v)  # integral with uniform density.
         return St, St_v
 
@@ -322,10 +325,9 @@ class EcrtTester:
             St_running.append(St)
             if len(set(b_last_used_list)) == 1 and update:
                 # If the ensemble martingale passes the test level, we can safely reject the null.
-                if St > 1/alpha:
-                    if rejected==-1: rejected= new_points
+                if St > 1 / alpha:
+                    if rejected == -1: rejected = new_points
         return  rejected, St_running
-
 
 
 if __name__ == "__main__":
@@ -342,11 +344,12 @@ if __name__ == "__main__":
 
     for test in tests_list:
         rejected_vec = np.zeros((n_exp,))
-        X_total, Y_total = None, None
+
         for ii, seed in enumerate(seed_vec):
+            X_total, Y_total = None, None
             for seq in range(50):
                 print(f"Seed: {ii}, seq: {seq}")
-                X, Y, mu = get_cit_data(test=test, n=20, seed = (seed+1)*100+seq)
+                X, Y, mu = get_cit_data(test=test, n=20, seed=(seed + 1) * 100 + seq)
                 n_samples = X_total.shape[0] if X_total is not None else X.shape[0]
                 X_total = X if X_total is None else np.concatenate((X_total, X), axis=0)
                 Y_total = Y if Y_total is None else np.concatenate((Y_total, Y), axis=0)
@@ -355,11 +358,9 @@ if __name__ == "__main__":
                                  "X_sigma": np.eye(d)}
                 ecrt_tester = EcrtTester(n_init=n_samples, j=j,
                                          sampling_args=sampling_args)  # In this simple run, almost all the input parameters are the default ones.
-                rejected, Sts  = ecrt_tester.run(X, Y)
+                rejected, Sts = ecrt_tester.run(X_total, Y_total)
                 print("Rejected at: ", rejected)
                 results_dict[test]["sts"].append(Sts)
-
-
 
     if not os.path.exists("logs/cit/"):
         os.makedirs("logs/cit/")
