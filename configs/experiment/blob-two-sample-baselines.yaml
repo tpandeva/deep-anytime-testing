@@ -35,3 +35,5 @@ train:
   batch_size: 90
   save: false
   save_dir: "path/to/deep-anytime-testing/logs/blob/2st/"
+  l1_lambda: 0.0
+  l2_lambda: 0.0

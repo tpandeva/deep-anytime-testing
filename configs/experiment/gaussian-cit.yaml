@@ -9,7 +9,7 @@ defaults:
       - projection
 
 
-project: "Gaussian-CIT"
+project: "Gaussian-CIT-MMDE"
 
 
 tau1:
@@ -23,27 +23,31 @@ tau2:
   projection:
     input_dim: 0
 
+
 model:
   input_size: 2
-  hidden_layer_size: []
+  hidden_layer_size: [16] #[2, 2]
+  layer_norm: false
+  bias: true
 
 data:
-  data_seed: 0
-  samples: 20
+  data_seed: 32
+  samples: 100
   type: "type2"
-  with_labels: false
 
 
 train:
   seed: 0
-  lr: 0.0005
+  lr: 0.005 #0.005
   earlystopping:
-    patience: 10
+    patience: 10 #10
     delta: 0.0
-  epochs: 500
+  epochs: 1000
   seqs: 50 # number of mini-batches
   T: 0 #Warm start number of mini-batches used for the training only
   alpha: 0.05 # significance level
-  batch_size: 20
+  batch_size: 100
+  l1_lambda: 0.00001
+  l2_lambda: 0.0
   save: false
   save_dir: ""

@@ -1,4 +1,4 @@
 defaults:
-  - experiment: ???
+  - experiment: gaussian-cit
   - override hydra/job_logging: colorlog
   - override hydra/hydra_logging: colorlog

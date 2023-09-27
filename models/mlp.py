@@ -26,7 +26,7 @@ class MLP(nn.Module):
                 in_features = out_features
 
         # Add the output layer
-        layers.append(nn.Linear(in_features, output_size))
+        layers.append(nn.Linear(in_features, output_size, bias=bias))
 
         self.model = nn.Sequential(*layers)
 

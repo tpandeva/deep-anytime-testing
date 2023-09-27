@@ -36,3 +36,5 @@ train:
   T: 0 #Warm start number of mini-batches used for the training only
   alpha: 0.05 # significance level
   batch_size: 64
+  l1_lambda: 0.0
+  l2_lambda: 0.0

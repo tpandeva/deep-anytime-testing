@@ -349,7 +349,7 @@ if __name__ == "__main__":
             X_total, Y_total = None, None
             for seq in range(50):
                 print(f"Seed: {ii}, seq: {seq}")
-                X, Y, mu = get_cit_data(test=test, n=20, seed=(seed + 1) * 100 + seq)
+                X, Y, mu = get_cit_data(test=test, n=100, seed=(seed + 1) * 100 + seq)
                 n_samples = X_total.shape[0] if X_total is not None else X.shape[0]
                 X_total = X if X_total is None else np.concatenate((X_total, X), axis=0)
                 Y_total = Y if Y_total is None else np.concatenate((Y_total, Y), axis=0)

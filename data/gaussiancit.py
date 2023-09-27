@@ -50,11 +50,11 @@ class GaussianCIT(DatasetOperator):
         super().__init__(tau1, tau2)
         X, Y, mu = get_cit_data(n=samples, test=type, seed=seed)
         X_tilde = sample_X_given_Z(X[:, 1:].copy(), mu)
-        X = torch.from_numpy(X)
-        Y = torch.from_numpy(Y)
-        X_tilde = torch.from_numpy(X_tilde)
-        Z = torch.cat((X, Y), dim=1)
-        Z_tilde = torch.cat((X_tilde, Y), dim=1)
+        X = torch.from_numpy(X).to(torch.float32)
+        Y = torch.from_numpy(Y).to(torch.float32)
+        X_tilde = torch.from_numpy(X_tilde).to(torch.float32)
+        Z = torch.cat((X[:,:1], Y), dim=1)
+        Z_tilde = torch.cat((X_tilde[:,:1], Y), dim=1)
         self.z = torch.stack([Z, Z_tilde], dim=2)
 
 class GaussianCITGen(DataGenerator):

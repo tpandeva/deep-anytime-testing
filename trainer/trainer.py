@@ -34,7 +34,9 @@ class Trainer:
         self.net = net
         self.datagen = datagen
         self.device = device
-        self.optimizer = torch.optim.Adam(self.net.parameters(), lr=self.lr)
+        self.weight_decay = cfg.l2_lambda
+        self.l1_lambda = cfg.l1_lambda
+        self.optimizer = torch.optim.Adam(self.net.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         self.early_stopper = EarlyStopper(patience=self.patience, min_delta=self.delta)
         self.bs = cfg.batch_size
         self.save = cfg.save
@@ -45,6 +47,12 @@ class Trainer:
         for key, value in logs.items():
             wandb.log({key: value})
             logging.info(f"Progress {key}: {value}")
+    def l1_regularization(self):
+        l1_regularization = torch.tensor(0., requires_grad=True)
+        for name, param in self.net.named_parameters():
+            if 'bias' not in name:
+                l1_regularization = l1_regularization+ torch.norm(param, p=1)
+        return l1_regularization
 
     def train_evaluate_epoch(self, loader, mode="train"):
         """Train/Evaluate the model for one epocj and log the results."""
@@ -60,7 +68,7 @@ class Trainer:
             else:
                 self.net = self.net.eval()
                 out = self.net(z, tau_z).detach()
-            loss = -out.mean()
+            loss = -out.mean() + self.l1_lambda * self.l1_regularization()
             aggregated_loss +=-out.sum()
             mmde *= torch.exp(out.sum())
             if mode == "train":
