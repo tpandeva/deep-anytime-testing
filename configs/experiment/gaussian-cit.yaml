@@ -25,11 +25,11 @@ tau2:
 
 model:
   input_size: 2
-  hidden_layer_size: [30, 30]
+  hidden_layer_size: []
 
 data:
   data_seed: 0
-  samples: 90
+  samples: 20
   type: "type2"
   with_labels: false
 
@@ -41,9 +41,9 @@ train:
     patience: 10
     delta: 0.0
   epochs: 500
-  seqs: 1 # number of mini-batches
+  seqs: 50 # number of mini-batches
   T: 0 #Warm start number of mini-batches used for the training only
   alpha: 0.05 # significance level
-  batch_size: 90
+  batch_size: 20
   save: false
   save_dir: ""
