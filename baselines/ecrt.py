@@ -1,14 +1,13 @@
 import numpy as np
 from enum import Enum
 import json
-import os
 from sklearn.linear_model import LassoCV, Lasso
 from warnings import simplefilter
 from data import get_cit_data
 from sklearn.exceptions import ConvergenceWarning
 simplefilter("ignore", category=ConvergenceWarning)
-
-
+import os
+import pickle
 def get_data_statistics(X):
     mu = np.mean(X, axis=0)
     sigma = np.cov(X.T)
@@ -325,7 +324,7 @@ class EcrtTester:
                 # If the ensemble martingale passes the test level, we can safely reject the null.
                 if St > 1/alpha:
                     if rejected==-1: rejected= new_points
-        return rejected, St_running
+        return  rejected, St_running
 
 
 
@@ -343,12 +342,26 @@ if __name__ == "__main__":
 
     for test in tests_list:
         rejected_vec = np.zeros((n_exp,))
+        X_total, Y_total = None, None
         for ii, seed in enumerate(seed_vec):
-            np.random.seed(seed)
-            X, Y, mu = get_cit_data(test=test, n=1000)
-            sampling_args = {"X_mu": np.array([mu.mean()] + [0] * (d - 1)),
-                             "X_sigma": np.eye(d)}
-            ecrt_tester = EcrtTester(n_init=20, j=j,
-                                     sampling_args=sampling_args)  # In this simple run, almost all the input parameters are the default ones.
-            Sts  = ecrt_tester.run(X, Y)
-            results_dict[test]["sts"].append(Sts)
+            for seq in range(50):
+                print(f"Seed: {ii}, seq: {seq}")
+                X, Y, mu = get_cit_data(test=test, n=20, seed = (seed+1)*100+seq)
+                n_samples = X_total.shape[0] if X_total is not None else X.shape[0]
+                X_total = X if X_total is None else np.concatenate((X_total, X), axis=0)
+                Y_total = Y if Y_total is None else np.concatenate((Y_total, Y), axis=0)
+
+                sampling_args = {"X_mu": np.array([0] * d),
+                                 "X_sigma": np.eye(d)}
+                ecrt_tester = EcrtTester(n_init=n_samples, j=j,
+                                         sampling_args=sampling_args)  # In this simple run, almost all the input parameters are the default ones.
+                rejected, Sts  = ecrt_tester.run(X, Y)
+                print("Rejected at: ", rejected)
+                results_dict[test]["sts"].append(Sts)
+
+
+
+    if not os.path.exists("logs/cit/"):
+        os.makedirs("logs/cit/")
+    pickle.dump(results_dict, open("logs/cit/crt.pkl", "wb"))
+

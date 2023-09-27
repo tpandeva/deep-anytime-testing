@@ -6,7 +6,7 @@ from torch.utils.data import Dataset
 from .datagen import DatasetOperator, DataGenerator
 
 
-def get_cit_data(d=20, a=3, n=5000, test='type1'):
+def get_cit_data(d=20, a=3, n=5000, test='type1', seed=0):
     """Generate data for the PCR test.
      Code from https://github.com/shaersh/ecrt/
     :param d: dimension of the data
@@ -15,6 +15,8 @@ def get_cit_data(d=20, a=3, n=5000, test='type1'):
     :param test: type of the test
     :return: X, Y data
     """
+    torch.manual_seed(seed)
+    np.random.seed(seed)
     Z_mu = np.zeros((d-1, 1)).ravel()
     Z_Sigma = np.eye(d-1)
     Z = np.random.multivariate_normal(Z_mu, Z_Sigma, n)
@@ -46,9 +48,7 @@ def sample_X_given_Z(Z, X_mu):
 class GaussianCIT(DatasetOperator):
     def __init__(self, type, samples, seed, tau1, tau2):
         super().__init__(tau1, tau2)
-        torch.manual_seed(seed)
-        np.random.seed(seed)
-        X, Y, mu = get_cit_data(n=samples, test=type)
+        X, Y, mu = get_cit_data(n=samples, test=type, seed=seed)
         X_tilde = sample_X_given_Z(X[:, 1:].copy(), mu)
         X = torch.from_numpy(X)
         Y = torch.from_numpy(Y)
