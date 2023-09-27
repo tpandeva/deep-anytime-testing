@@ -1,10 +1,10 @@
 # @package _global_
 defaults:
-  - data: gaussiancit
-  - model: mlp
-  - operator@tau1:
+  - /data: gaussiancit
+  - /model: mlp
+  - /operator@tau1:
       - projection
-  - operator@tau2:
+  - /operator@tau2:
       - swap
       - projection
 
