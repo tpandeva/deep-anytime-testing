@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader, ConcatDataset
 import wandb
 import pickle
 from models import EarlyStopper
+from itertools import permutations
 class Trainer:
     """
     Trainer class encapsulates the training, evaluation, and logging processes for a neural network.
@@ -157,20 +158,27 @@ class TrainerC2ST(Trainer):
         eval = torch.exp(log_eval)
         # E-value
         return eval
-    def s_c2st(self, y, logits, n_per=1000):
+
+    def first_k_unique_permutations(self,n,k):
+        unique_perms = set()
+        while len(unique_perms) < k:
+            unique_perms.add(tuple(np.random.choice(n, n, replace=False)))
+        return list(unique_perms)
+    def s_c2st(self, y, logits, n_per=100):
         y_hat = torch.argmax(logits, dim=1)
         n = y.shape[0]
         accuracy = torch.sum(y == y_hat) / n
         stats = np.zeros(n_per)
+        permutations = self.first_k_unique_permutations(n, n_per)
         for r in range(n_per):
-            ind = np.random.choice(n, n, replace=False)
+            ind = np.asarray(permutations[r])
             # divide into new X, Y
             y_perm = y.clone()[ind]
             # compute accuracy
             stats[r] = torch.sum(y_perm == y_hat) / y.shape[0]
         sorted_stats = np.sort(stats)
         p_val = np.sum(sorted_stats > accuracy.item()) / n_per
-        return p_val
+        return p_val, accuracy
 
     def train_evaluate_epoch(self, loader, mode="train"):
         """Train/Evaluate the model for one epocj and log the results."""
@@ -196,12 +204,12 @@ class TrainerC2ST(Trainer):
             aggregated_loss +=loss
             # compute e-c2st and s-c2st
             e_val *= self.e_c2st(labels, out)
-            p_val = self.s_c2st(labels, out)
+            p_val, acc = self.s_c2st(labels, out)
             if mode == "train":
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
-        self.log({f"{mode}_e-value": e_val.item(),f"{mode}_p-value": p_val.item(), f"{mode}_loss": aggregated_loss.item()/num_samples})
+        self.log({f"{mode}_e-value": e_val.item(),f"{mode}_p-value": p_val.item(),f"{mode}_accuracy": acc.item(), f"{mode}_loss": aggregated_loss.item()/num_samples})
         return aggregated_loss/num_samples, e_val
 
 

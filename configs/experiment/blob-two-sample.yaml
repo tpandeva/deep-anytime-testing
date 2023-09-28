@@ -1,10 +1,10 @@
 # @package _global_
 defaults:
-  - data: blob
-  - model: mlp
-  - operator@tau1:
+  - /data: blob
+  - /model: mlp
+  - /operator@tau1:
       - projection
-  - operator@tau2:
+  - /operator@tau2:
       - swap
       - projection
 
@@ -32,6 +32,8 @@ data:
   samples: 90
   type: "type2"
   with_labels: false
+  layer_norm: true
+  baias: true
 
 
 train:
