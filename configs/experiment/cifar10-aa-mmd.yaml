@@ -1,0 +1,26 @@
+# @package _global_
+defaults:
+  - /data: cifar10
+  - /model: mlp
+  - /operator@tau1:
+      - net
+
+project: "Cifar10-AA-MMD"
+
+
+tau1:
+  net:
+    file_to_model: "/Users/teddy/Desktop/deep-anytime-testing/data/cifar10/best_model.pth"
+
+tau2: null
+
+data:
+  data_seed: 0
+  samples: 300
+  file: "/Users/teddy/Desktop/deep-anytime-testing/data/cifar10/cifar10/"
+  file_to_model: "/Users/teddy/Desktop/deep-anytime-testing/data/cifar10/best_model.pth"
+
+train:
+  name: "mmd"
+  seed: 0
+  bs: 64

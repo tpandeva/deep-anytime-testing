@@ -1,11 +1,14 @@
 import torch
 import numpy as np
 import hydra
+from torch.utils.data import DataLoader
+from baselines.mmd_test import mmd_test_rbf
 from trainer import TrainerC2ST
 from omegaconf import DictConfig, OmegaConf
 import wandb
 from hydra.utils import instantiate
 from torchvision import transforms
+import torchvision.models as models
 
 @hydra.main(config_path='configs', config_name='config.yaml')
 def train_pipeline(cfg: DictConfig):
@@ -36,14 +39,26 @@ def train_pipeline(cfg: DictConfig):
     tau1 = transforms.Compose(tau1_list)
     tau2 = transforms.Compose(tau2_list)
 
-    # initialize network
-    net = instantiate(cfg.model).to(device)
-    print(net)
-    wandb.watch(net)
+    if cfg.train.name=="deep":
+        net = instantiate(cfg.model).to(device)
+        print(net)
+        wandb.watch(net)
+        # initialize the trainer object and fit the network to the task
+        trainer = TrainerC2ST(cfg.train, net, tau1, tau2, datagen, device, cfg.data.data_seed)
+        trainer.train()
+    elif cfg.train.name=="mmd":
+        # load model
+        print("Loading model")
+        data = datagen.generate(cfg.train.seed, tau1, tau2)
+        data_loader = DataLoader(data, batch_size = cfg.train.bs, shuffle=True)
+        x_all, y_all = None, None
+        for i, (x, y) in enumerate(data_loader):
+            x_all = x if x_all is None else torch.cat((x_all, x), dim=0)
+            y_all = y if y_all is None else torch.cat((y_all, y), dim=0)
+            p_val = mmd_test_rbf(x_all, y_all, int(np.sqrt(len(x_all))))
+            wandb.log({"p_val": p_val})
+            print(f"Batch {i}, p_val: {p_val}")
 
-    # initialize the trainer object and fit the network to the task
-    trainer = TrainerC2ST(cfg.train, net, tau1, tau2, datagen, device, cfg.data.data_seed)
-    trainer.train()
 
 
 if __name__ == "__main__":
