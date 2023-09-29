@@ -6,7 +6,7 @@ defaults:
       - swap
 
 
-project: "BLOB-transforms"
+project: "BLOB-Independence-MMDE"
 seed: 0
 
 tau1: null
@@ -17,24 +17,31 @@ tau2:
     d: 2
 
 model:
-  input_size: 6
-  hidden_layer_size: [50, 50]
+  input_size: 3
+  hidden_layer_size: [30, 30]
+  layer_norm: true
+  bias: true
+  flatten: false
 
 data:
-  samples: 2700
-  type: "type2"
+  data_seed: 0
+  samples: 5000
+  type: "type12"
   with_labels: true
 
 train:
+  seed: 0
   lr: 0.0005
   earlystopping:
-    patience: 20
+    patience: 10
     delta: 0.0
   epochs: 1000
   seqs: 1 # number of mini-batches
   T: 0 #Warm start number of mini-batches used for the training only
   alpha: 0.05 # significance level
-  batch_size: 90
+  batch_size: 2000
+  save: false
+  save_dir: ""
   l1_lambda: 0.0
   l2_lambda: 0.0
 

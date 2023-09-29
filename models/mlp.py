@@ -51,7 +51,7 @@ class MMDEMLP(MLP):
     The forward method implements a custom operation over the outputs of the base MLP.
     """
 
-    def __init__(self, input_size, hidden_layer_size, output_size, layer_norm, drop_out, drop_out_p, bias):
+    def __init__(self, input_size, hidden_layer_size, output_size, layer_norm, drop_out, drop_out_p, bias, flatten=True):
         """
         Initializes the MMDEMLP object.
 
@@ -71,6 +71,7 @@ class MMDEMLP(MLP):
 
         # Activation function for the custom operation in the forward method
         self.sigma = torch.nn.Tanh()
+        self.flatten = flatten
 
 
     def forward(self, x, y) -> torch.Tensor:
@@ -86,10 +87,19 @@ class MMDEMLP(MLP):
         """
 
         # Compute the outputs from the base MLP model for x and y
-        if len(x.shape)>2: x = torch.flatten(x, start_dim=1)
-        if len(y.shape)>2: y = torch.flatten(y, start_dim=1)
-        g_x = self.model(x)
-        g_y = self.model(y)
+        if len(x.shape)>2 or len(y.shape)>2:
+            if self.flatten:
+                x = torch.flatten(x, start_dim=1)
+                y = torch.flatten(y, start_dim=1)
+                g_x = self.model(x)
+                g_y = self.model(y)
+            else:
+                num_samples = x.shape[-1]
+                g_x, g_y = 0, 0
+                for i in range(num_samples):
+                    g_x += self.model(x[...,i])
+                    g_y += self.model(y[...,i])
+
 
         # Compute final output
         output = torch.log(1 + self.sigma(g_x - g_y))
