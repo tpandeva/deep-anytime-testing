@@ -8,7 +8,7 @@ class CNN(nn.Module):
                                   nn.ReLU(),
                                   nn.MaxPool2d(2),
                                   nn.Dropout(0.25))
-        self.fc = nn.Sequential(nn.Linear(9216, 100),
+        self.fc = nn.Sequential(nn.Linear(5408, 100),
                                 nn.ReLU(),
                                 nn.Dropout(0.5),
                                 nn.Linear(100, output_size))
