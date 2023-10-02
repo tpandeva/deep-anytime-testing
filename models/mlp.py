@@ -97,8 +97,11 @@ class MMDEMLP(MLP):
                 num_samples = x.shape[-1]
                 g_x, g_y = 0, 0
                 for i in range(num_samples):
-                    g_x += self.model(x[...,i])
-                    g_y += self.model(y[...,i])
+                    g_x += self.model(torch.flatten(x[...,i], start_dim=1))
+                    g_y += self.model(torch.flatten(y[...,i], start_dim=1))
+        else:
+            g_x = self.model(x)
+            g_y = self.model(y)
 
 
         # Compute final output

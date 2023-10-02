@@ -1,4 +1,4 @@
 defaults:
-  - experiment: ???
+  - experiment: cifar10-aa-mmd
   - override hydra/job_logging: colorlog
   - override hydra/hydra_logging: colorlog

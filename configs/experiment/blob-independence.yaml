@@ -25,7 +25,7 @@ model:
 
 data:
   data_seed: 0
-  samples: 5000
+  samples: 90
   type: "type12"
   with_labels: true
 
@@ -39,7 +39,7 @@ train:
   seqs: 1 # number of mini-batches
   T: 0 #Warm start number of mini-batches used for the training only
   alpha: 0.05 # significance level
-  batch_size: 2000
+  batch_size: 90
   save: false
   save_dir: ""
   l1_lambda: 0.0

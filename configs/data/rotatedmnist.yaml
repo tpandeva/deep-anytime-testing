@@ -1,6 +1,4 @@
 _target_: "data.rotatedmnist.RotatedMnistDataGen"
 samples: 1000
 type: "type2"
-file1: "something"
-file2: "something"
-data_seed: 0
+p: 0.3

@@ -9,7 +9,7 @@ defaults:
       - projection
 
 
-project: "BLOB-2ST-MMD"
+project: "BLOB-2ST-MMD-2"
 
 
 tau1:
@@ -26,12 +26,13 @@ tau2:
 
 data:
   data_seed: 0
-  samples: 3600
+  samples: 90
   type: "type2"
   with_labels: false
 
 
 train:
+  seqs: 60
   name: "mmd"
   seed: 0
   bs: 90

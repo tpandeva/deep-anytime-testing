@@ -1,7 +1,7 @@
 # @package _global_
 defaults:
   - /data: rotatedmnist
-  - /model: rotcnnmmde
+  - /model: mlp
   - /operator@tau1:
       - projection
       - reshape
@@ -13,14 +13,14 @@ defaults:
       - rotation
 
 
+
 project: "MNIST-Rotation-MMDE"
-seed: 0
 
 tau1:
   projection:
     input_dim: 0
   rotation:
-    num_rotations: 8
+    num_rotations: 4
 
 tau2:
   swap:
@@ -29,16 +29,21 @@ tau2:
   projection:
     input_dim: 0
   rotation:
-    num_rotations: 8
+    num_rotations: 4
 
 
 data:
   samples: 100
   type: "type11"
-  data_seed: 0
-  file1: "path/to/mnist_rotation_new/mnist_9_rotation_normalized_float_test.amat"
-  file2: "path/to/mnist_rotation_new/mnist_6_rotation_normalized_float_test.amat"
+  data_seed: 100
+  p: 0.5
 
+model:
+  input_size: 784
+  hidden_layer_size: [128, 64]
+  drop_out: true
+  drop_out_p: 0.5
+  layer_norm: false
 
 train:
   seed: 0
@@ -53,5 +58,5 @@ train:
   batch_size: 64
   save: false
   save_dir: ""
-  l1_lambda: 0.0
-  l2_lambda: 0.0
+  l1_lambda: 0.01
+  l2_lambda: 0.01
