@@ -160,16 +160,17 @@ class TrainerC2ST(Trainer):
         return eval
 
     def first_k_unique_permutations(self,n,k):
+        if np.log(k)>n*(np.log(n)-1)+0.5*(np.log(2*np.pi*n)): k=n
         unique_perms = set()
         while len(unique_perms) < k:
             unique_perms.add(tuple(np.random.choice(n, n, replace=False)))
-        return list(unique_perms)
+        return list(unique_perms),k
     def s_c2st(self, y, logits, n_per=100):
         y_hat = torch.argmax(logits, dim=1)
         n = y.shape[0]
         accuracy = torch.sum(y == y_hat) / n
         stats = np.zeros(n_per)
-        permutations = self.first_k_unique_permutations(n, n_per)
+        permutations, n_per = self.first_k_unique_permutations(n, n_per)
         for r in range(n_per):
             ind = np.asarray(permutations[r])
             # divide into new X, Y
@@ -202,13 +203,13 @@ class TrainerC2ST(Trainer):
             labels = torch.concat((torch.ones((z.shape[0], 1)),torch.zeros((z.shape[0], 1)))).squeeze(1).long().to(self.device)
             loss =  self.loss(out, labels)
             aggregated_loss +=loss
-            # compute e-c2st and s-c2st
-            e_val *= self.e_c2st(labels, out)
-            p_val, acc = self.s_c2st(labels, out)
             if mode == "train":
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
+            # compute e-c2st and s-c2st
+            e_val *= self.e_c2st(labels, out)
+            p_val, acc = self.s_c2st(labels, out)
         self.log({f"{mode}_e-value": e_val.item(),f"{mode}_p-value": p_val.item(),f"{mode}_accuracy": acc.item(), f"{mode}_loss": aggregated_loss.item()/num_samples})
         return aggregated_loss/num_samples, e_val
 

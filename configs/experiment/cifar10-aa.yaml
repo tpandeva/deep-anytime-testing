@@ -10,11 +10,13 @@ project: "Cifar10-AA-MMDE"
 
 tau1:
   net:
-    file_to_model: "data/cifar10/best_model.pth"
+    file_to_model: "/var/scratch/tpandeva/deep-anytime-testing/data/cifar10/best_model.pth"
 
 tau2: null
 
 model:
+  drop_out: false
+  bias: true
   input_size: 10
   output_size: 1
   hidden_layer_size: [32,32]
@@ -38,3 +40,5 @@ train:
   batch_size: 64
   l1_lambda: 0.0
   l2_lambda: 0.0
+  save: false
+  save_dir: ""
