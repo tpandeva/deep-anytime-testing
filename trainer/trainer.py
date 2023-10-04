@@ -139,6 +139,28 @@ class TrainerC2ST(Trainer):
         """Initializes the Trainer object with the provided configurations and parameters."""
         super().__init__(cfg, net, tau1, tau2, datagen, device, data_seed)
         self.loss = torch.nn.CrossEntropyLoss(reduction='sum')
+        self.opt_lmbd = 0
+        self.run_mean = 0
+        self.grad_sq_sum = 1
+        self.truncation_level = 0.5
+
+    def testing_by_betting(self, y, logits):
+        w = 2* y - 1
+        f = torch.nn.Softmax()
+        ft = 2*f(logits)[:,1]-1
+        e_val = torch.exp(torch.sum(torch.log(1 + w * ft)))
+        n_samples = y.shape[0]
+        payoffs = w*ft
+        e_val_ons = 1
+        for i in range(n_samples):
+
+            grad = self.run_mean / (1 + self.run_mean * self.opt_lmbd)
+            self.grad_sq_sum += grad ** 2
+            self.opt_lmbd = max(0, min(
+                self.truncation_level, self.opt_lmbd + 2 / (2 - np.log(3)) * grad / self.grad_sq_sum))
+            e_val_ons *= 1+self.opt_lmbd * payoffs[i]
+            self.run_mean = payoffs[i]
+        return e_val, e_val_ons
 
     def e_c2st(self, y, logits):
 
@@ -184,7 +206,7 @@ class TrainerC2ST(Trainer):
     def train_evaluate_epoch(self, loader, mode="train"):
         """Train/Evaluate the model for one epocj and log the results."""
         aggregated_loss = 0
-        e_val = 1
+        e_val, tb_val, tb_val_ons = 1, 1, 1
         num_samples = len(loader.dataset)
         for i, (z, tau_z) in enumerate(loader):
             z = z.to(self.device)
@@ -210,8 +232,12 @@ class TrainerC2ST(Trainer):
             # compute e-c2st and s-c2st
             e_val *= self.e_c2st(labels, out)
             p_val, acc = self.s_c2st(labels, out)
-        self.log({f"{mode}_e-value": e_val.item(),f"{mode}_p-value": p_val.item(),f"{mode}_accuracy": acc.item(), f"{mode}_loss": aggregated_loss.item()/num_samples})
-        return aggregated_loss/num_samples, e_val
+            results_tb = self.testing_by_betting(labels, out)
+            tb_val *= results_tb[0]
+            tb_val_ons *= results_tb[1]
+        self.log({f"{mode}_e-value": e_val.item(), f"{mode}_p-value": p_val.item(),f"{mode}_accuracy": acc.item(),
+                  f"{mode}_tb-value": tb_val.item(), f"{mode}_tb-ons-value": tb_val_ons.item(), f"{mode}_loss": aggregated_loss.item()/num_samples})
+        return aggregated_loss/num_samples, tb_val_ons
 
 
 

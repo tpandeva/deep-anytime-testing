@@ -8,7 +8,7 @@ defaults:
       - swap
       - projection
 
-project: "BLOB-2ST-Baselines"
+project: "Test"
 
 tau1:
   projection:
@@ -41,13 +41,14 @@ data:
 
 
 train:
+  name: "deep"
   seed: 0
   lr: 0.0005
   earlystopping:
     patience: 10
     delta: 0.0
   epochs: 500
-  seqs: 1 # number of mini-batches
+  seqs: 60 # number of mini-batches
   T: 0 #Warm start number of mini-batches used for the training only
   alpha: 0.05 # significance level
   batch_size: 90
