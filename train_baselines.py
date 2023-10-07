@@ -71,6 +71,7 @@ def train_pipeline(cfg: DictConfig):
             wandb.watch(net)
             nets.append(net)
         trainer = TrainerSC2ST(cfg.train, nets, tau1, tau2, datagen, device, cfg.data.data_seed)
+        trainer.train()
 
 
 if __name__ == "__main__":
