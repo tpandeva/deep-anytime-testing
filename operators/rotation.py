@@ -40,9 +40,9 @@ class RotateImgOperator(Operator):
         for _ in range(self.num_rotations):
             x = self.rot_img(x.clone()).type(self.dtype)
             if x_transformed is None:
-                x_transformed = x
+                x_transformed = x[..., None]
             else:
-                x_transformed = torch.cat((x_transformed[..., None], x[..., None]), dim=-1)
+                x_transformed = torch.cat((x_transformed, x[..., None]), dim=-1)
         return x_transformed
 
     def to(self, device):
