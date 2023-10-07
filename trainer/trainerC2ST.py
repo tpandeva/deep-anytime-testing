@@ -153,7 +153,7 @@ class TrainerSC2ST(TrainerC2ST):
 
     def __init__(self, cfg, net, tau1, tau2, datagen, device, data_seed):
         """Initializes the Trainer object with the provided configurations and parameters."""
-        super().__init__(cfg, net, tau1, tau2, datagen, device, data_seed)
+        super().__init__(cfg, net[0], tau1, tau2, datagen, device, data_seed)
         param = []
         for i in range(cfg.train.ps):
             param = param + list(self.net[i].parameters())
