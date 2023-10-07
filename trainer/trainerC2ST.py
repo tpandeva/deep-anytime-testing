@@ -195,7 +195,7 @@ class TrainerSC2ST(TrainerC2ST):
                 out = torch.concat((out1, out2))
                 labels = torch.concat((torch.ones((z.shape[0], 1)), torch.zeros((z.shape[0], 1)))).squeeze(1).long().to(
                 self.device)
-                loss += self.loss(out, labels)
+                loss += self.loss(out.clone(), labels)
                 if mode == "train":
                     self.optimizer.zero_grad()
                     loss.backward()
