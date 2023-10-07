@@ -155,6 +155,7 @@ class TrainerSC2ST(TrainerC2ST):
         """Initializes the Trainer object with the provided configurations and parameters."""
         super().__init__(cfg, net[0], tau1, tau2, datagen, device, data_seed)
         param = []
+        self.net = net
         for i in range(cfg.ps):
             param = param + list(self.net[i].parameters())
         self.optimizer = torch.optim.Adam(param, lr=cfg.train.lr)
