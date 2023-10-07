@@ -8,7 +8,7 @@ from omegaconf import DictConfig, OmegaConf
 import wandb
 from hydra.utils import instantiate
 from torchvision import transforms
-
+from trainer.trainerC2ST import TrainerSC2ST
 @hydra.main(config_path='configs', config_name='config.yaml')
 def train_pipeline(cfg: DictConfig):
     print(cfg)
@@ -63,7 +63,14 @@ def train_pipeline(cfg: DictConfig):
                 p_val = mmd_test_rbf(x_all, y_all, int(np.sqrt(len(x_all))))
                 wandb.log({"p_val": p_val, "running_seed": 100*(cfg.data.data_seed+1)+r+1}) # (self.data_seed+1)*100+seed
                 print(f"Batch {i}, p_val: {p_val}")
-
+    elif cfg.train.name=="rand":
+        nets = []
+        for r in range(cfg.train.ps):
+            net = instantiate(cfg.model).to(device)
+            print(net)
+            wandb.watch(net)
+            nets.append(net)
+        trainer = TrainerSC2ST(cfg.train, nets, tau1, tau2, datagen, device, cfg.data.data_seed)
 
 
 if __name__ == "__main__":
