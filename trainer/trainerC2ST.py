@@ -158,7 +158,7 @@ class TrainerSC2ST(TrainerC2ST):
         self.net = net
         for i in range(cfg.ps):
             param = param + list(self.net[i].parameters())
-        self.optimizer = torch.optim.Adam(param, lr=cfg.train.lr)
+        self.optimizer = torch.optim.Adam(param, lr=cfg.lr)
         self.loss = torch.nn.CrossEntropyLoss(reduction='sum')
 
     def s_c2st(self, y, logits, n_per=100):
