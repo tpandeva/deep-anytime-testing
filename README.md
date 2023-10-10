@@ -49,7 +49,7 @@ We also recommend to install wandb for logging. See https://docs.wandb.ai/quicks
 
         - **Initialize and perform the training** This step initializes a trainer object of class trainer.trainer.Trainer with configuration which can be specified in (configs/config.yaml)
    
-      #### **Important:** The user should specify all needed parameters and store them in the configs/experiment.yaml file! An example is given below:
+      #### **Important:** The user should specify all needed parameters and store them in the configs/experiment/experiment.yaml file! An example (blob-swap-projection.yaml) is given below:
     ```
     # @package _global_
     defaults:
