@@ -128,7 +128,7 @@ class TrainerC2ST(Trainer):
         - tuple: Aggregated loss and E-value using ONS betting strategy for the current epoch.
         """
         aggregated_loss = 0
-        e_val, tb_val, tb_val_ons = 1, 1, 1
+        e_val, tb_val_ons = 1, 1
         num_samples = len(loader.dataset)
         for i, (z, tau_z) in enumerate(loader):
             z = z.to(self.device)
@@ -157,12 +157,13 @@ class TrainerC2ST(Trainer):
                 e_val *= self.e_c2st(labels, out.detach())
                 p_val, acc = self.s_c2st(labels, out.detach())
                 results_tb = self.testing_by_betting(labels, out.detach())
-                tb_val_ons = results_tb[1]
+                tb_val_ons *= results_tb[1]
 
-                self.log({
-                    f"{mode}_p-value": p_val,
-                    f"{mode}_accuracy": acc
-                })
+                self.log(
+                    {f"{mode}_e-value": e_val.item(),
+                     f"{mode}_p-value": p_val.item(),
+                     f"{mode}_tb-ons-value": tb_val_ons.item(),
+                     })
 
             self.log({
                 f"{mode}_loss": aggregated_loss.item() / num_samples
