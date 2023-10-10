@@ -7,9 +7,10 @@ source my_env/bin/activate # conda activate my_env
 pip install -r requirements.txt
 ```
 We also recommend to install wandb for logging. See https://docs.wandb.ai/quickstart for more details. We use wandb for logging the training process and storing the test statistics.
-2. Datasets
+
+2.Datasets
    
-   **Blob Dataset**: The Blob dataset is a two-dimensional Gaussian mixture model with nine modes arranged on a 3 x 3 grid used by [[1]](#1) in their analysis.  The two distributions differ in their variance as visualized in the figure below.
+   **Blob Dataset**: The Blob dataset is a two-dimensional Gaussian mixture model with nine modes arranged on a 3 x 3 grid.  The two distributions differ in their variance as visualized in the figure below.
 
     ![Blob Data](figures/blob_data.png)
     
@@ -102,7 +103,7 @@ We also recommend to install wandb for logging. See https://docs.wandb.ai/quicks
       l2_lambda: 0.0 # l2 regularization parameter
     ```
 
-5. Experiments
+4. Experiments
 With the following lines you can run each experiment for a single seed. For example, power experiments can be run with the following commands:
     ```
    # Blob dataset, type 2, DAVT swap,projection and DNN baselines
@@ -129,10 +130,4 @@ With the following lines you can run each experiment for a single seed. For exam
 If you want to run for several seeds use the run.ssh file.
 
 To retrieve the results from wandb use the prepared notebooks in the folder notebooks.
-```
-
-### References
-<a id="1">[1]</a>  Chwialkowski, K. P., Ramdas, A., Sejdinovic, D., and Gretton, A. (2015). Fast two-sample testing with
-analytic representations of probability measures. Advances in Neural Information Processing Systems.
-
 
