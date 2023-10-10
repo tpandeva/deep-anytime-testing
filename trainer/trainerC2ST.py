@@ -1,20 +1,8 @@
 from trainer import Trainer
 import numpy as np
 import torch
-import time
 
 class TrainerC2ST(Trainer):
-    """
-    Trainer class encapsulates the training, evaluation, and logging processes for a neural network.
-
-    Attributes:
-        Several attributes are initialized from the configuration object, `cfg`, such as learning rate (`lr`),
-        number of epochs (`epochs`), patience for early stopping (`patience`), and others.
-        net: Neural network model to be trained.
-        operator: Operator used to compute transformations on input data.
-        datagen: Data generator used to produce training, validation, and test datasets.
-        device: Device (CPU/GPU) on which computations will be performed.
-    """
 
     def __init__(self, cfg, net, tau1, tau2, datagen, device, data_seed):
         """Initializes the Trainer object with the provided configurations and parameters."""
@@ -26,14 +14,12 @@ class TrainerC2ST(Trainer):
         self.truncation_level = 0.5
 
     def testing_by_betting(self, y, logits):
+        # ONS betting strategy
         w = 2 * y - 1
         f = torch.nn.Softmax()
         ft = 2 * f(logits)[:, 1] - 1
         e_val = torch.exp(torch.sum(torch.log(1 + w * ft)))
-        n_samples = y.shape[0]
         payoffs = w * ft
-        e_val_ons = 1
-        # for i in range(n_samples):
 
         grad = self.run_mean / (1 + self.run_mean * self.opt_lmbd)
         self.grad_sq_sum += grad ** 2
@@ -92,9 +78,7 @@ class TrainerC2ST(Trainer):
         num_samples = len(loader.dataset)
         for i, (z, tau_z) in enumerate(loader):
             z = z.to(self.device)
-            # z = z.transpose(2, 1).flatten(0).view(2*samples,-1)[...,:-1]
             tau_z = tau_z.to(self.device)
-            # tau_z = tau_z.transpose(2, 1).flatten(0).view(2*samples,-1)[...,-1]
             if mode == "train":
                 self.net = self.net.train()
                 out1 = self.net(z)
@@ -112,25 +96,15 @@ class TrainerC2ST(Trainer):
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
-            # compute e-c2st and s-c2st
+            # compute e-c2st, seq-it and s-c2st
             if mode == "test":
-                start = time.time()
                 e_val *= self.e_c2st(labels, out.detach())
-                end = time.time()
-                ec2st_time = end - start
 
-                start = time.time()
                 p_val, acc = self.s_c2st(labels, out.detach(), n_per=100)
-                end = time.time()
-                sc2st_time = end - start
 
-                start = time.time()
                 results_tb = self.testing_by_betting(labels, out.detach())
                 tb_val *= results_tb[0]
                 tb_val_ons *= results_tb[1]
-                end = time.time()
-                tbons_time = end - start
-                self.log({"ec2st_time": ec2st_time, "sc2st_time": sc2st_time, "tbons_time": tbons_time})
                 self.log(
                     {f"{mode}_e-value": e_val.item(), f"{mode}_p-value": p_val.item(),
                      f"{mode}_tb-value": tb_val.item(), f"{mode}_tb-ons-value": tb_val_ons.item(),
@@ -138,18 +112,9 @@ class TrainerC2ST(Trainer):
             self.log({ f"{mode}_loss": aggregated_loss.item() / num_samples, f"{mode}_accuracy": acc.item() })
         return aggregated_loss / num_samples, tb_val_ons
 
+# Only for the mnist experiments
 class TrainerSC2ST(TrainerC2ST):
-    """
-    Trainer class encapsulates the training, evaluation, and logging processes for a neural network.
 
-    Attributes:
-        Several attributes are initialized from the configuration object, `cfg`, such as learning rate (`lr`),
-        number of epochs (`epochs`), patience for early stopping (`patience`), and others.
-        net: Neural network model to be trained.
-        operator: Operator used to compute transformations on input data.
-        datagen: Data generator used to produce training, validation, and test datasets.
-        device: Device (CPU/GPU) on which computations will be performed.
-    """
 
     def __init__(self, cfg, net, tau1, tau2, datagen, device, data_seed):
         """Initializes the Trainer object with the provided configurations and parameters."""
@@ -169,7 +134,6 @@ class TrainerSC2ST(TrainerC2ST):
         permutations, n_per = self.first_k_unique_permutations(n, n_per)
         for r in range(n_per):
             ind = np.asarray(permutations[r])
-            # divide into new X, Y
             y_perm = y.clone()[ind]
             # compute accuracy
             stats[r] = torch.sum(y_perm == y_hat) / y.shape[0]
@@ -184,9 +148,7 @@ class TrainerSC2ST(TrainerC2ST):
         num_samples = len(loader.dataset)
         for i, (z, tau_z) in enumerate(loader):
             z = z.to(self.device)
-            # z = z.transpose(2, 1).flatten(0).view(2*samples,-1)[...,:-1]
             tau_z = tau_z.to(self.device)
-            # tau_z = tau_z.transpose(2, 1).flatten(0).view(2*samples,-1)[...,-1]
             num_pseudo_samples = tau_z.shape[-1]
             for i in range(num_pseudo_samples):
                 self.net[i] = self.net[i].train() if mode == "train" else self.net[i].eval()

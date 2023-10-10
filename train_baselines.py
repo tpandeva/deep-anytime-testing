@@ -3,12 +3,12 @@ import numpy as np
 import hydra
 from torch.utils.data import DataLoader
 from baselines.mmd_test import mmd_test_rbf
-from trainer import TrainerC2ST, TrainerECRT
+from trainer import TrainerC2ST, TrainerECRT, TrainerSC2ST
 from omegaconf import DictConfig, OmegaConf
 import wandb
 from hydra.utils import instantiate
 from torchvision import transforms
-from trainer.trainerC2ST import TrainerSC2ST
+
 @hydra.main(config_path='configs', config_name='config.yaml')
 def train_pipeline(cfg: DictConfig):
     print(cfg)
@@ -52,7 +52,6 @@ def train_pipeline(cfg: DictConfig):
         trainer = TrainerECRT(cfg.train, net, tau1, tau2, datagen, device, cfg.data.data_seed)
         trainer.train()
     elif cfg.train.name=="mmd":
-        # load model
         x_all, y_all = None, None
         for r in range(cfg.train.seqs):
             data = datagen.generate(r+1, tau1, tau2)
