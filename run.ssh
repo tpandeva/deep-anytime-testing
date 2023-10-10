@@ -1,0 +1,9 @@
+#!/bin/bash
+
+for s in {0..99}
+do
+  python train.py experiment=blob-swap-projection data.data_seed=$s data.type="type11" project="BLOB"
+wait
+done
+
+

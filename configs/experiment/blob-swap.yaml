@@ -39,7 +39,7 @@ train:
     patience: 10
     delta: 0.0
   epochs: 500
-  seqs: 40 # number of mini-batches
+  seqs: 50 # number of mini-batches
   T: 0 #Warm start number of mini-batches used for the training only
   alpha: 0.05 # significance level
   batch_size: 90

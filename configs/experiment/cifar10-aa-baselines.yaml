@@ -24,6 +24,7 @@ model:
 
 data:
   data_seed: 0
+  samples: 64
   file: "data/cifar10/"
   file_to_model: "data/cifar10/best_model.pth"
 
@@ -35,7 +36,7 @@ train:
     patience: 5
     delta: 0.0
   epochs: 1000
-  seqs: 1 # number of mini-batches
+  seqs: 50 # number of mini-batches
   T: 0 #Warm start number of mini-batches used for the training only
   alpha: 0.05 # significance level
   batch_size: 64

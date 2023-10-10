@@ -30,7 +30,7 @@ tau2:
 
 
 data:
-  samples: 100
+  samples: 16
   type: "type2"
   data_seed: 100
   p: 0.3
@@ -53,10 +53,10 @@ train:
     patience: 5
     delta: 0.0
   epochs: 1000
-  seqs: 10 # number of mini-batches
+  seqs: 50 # number of mini-batches
   T: 0 #Warm start number of mini-batches used for the training only
   alpha: 0.05 # significance level
-  batch_size: 64
+  batch_size: 16
   save: false
   save_dir: ""
   l1_lambda: 0.01
