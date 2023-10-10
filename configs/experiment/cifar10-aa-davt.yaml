@@ -5,12 +5,12 @@ defaults:
   - /operator@tau1:
       - net
 
-project: "Cifar10-AA-MMDE"
+project: "Test"
 
 
 tau1:
   net:
-    file_to_model: "/var/scratch/tpandeva/deep-anytime-testing/data/cifar10/best_model.pth"
+    file_to_model: "data/cifar10/best_model.pth"
 
 tau2: null
 
@@ -24,8 +24,8 @@ model:
 
 data:
   data_seed: 0
-  file: "/var/scratch/tpandeva/deep-anytime-testing/data/cifar10/cifar10/"
-  file_to_model: "/var/scratch/tpandeva/deep-anytime-testing/data/cifar10/best_model.pth"
+  file: "data/cifar10/" # folder where to store data
+  file_to_model: "data/cifar10/best_model.pth" # folder where the fine-tuned ResNET50 is stored
 
 train:
   seed: 0

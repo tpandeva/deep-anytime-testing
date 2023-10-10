@@ -6,7 +6,8 @@ defaults:
       - swap
 
 
-project: "BLOB-Independence-MMDE"
+project: "Test"
+
 seed: 0
 
 tau1: null

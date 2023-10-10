@@ -14,7 +14,7 @@ defaults:
 
 
 
-project: "MNIST-Rotation-MMDE"
+project: "Test"
 
 tau1:
   projection:

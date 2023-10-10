@@ -7,7 +7,7 @@ defaults:
 
 
 
-project: "BLOB-2ST-Swap"
+project: "Test"
 
 
 tau1: null
@@ -26,7 +26,7 @@ model:
 
 data:
   data_seed: 10
-  samples: 180
+  samples: 90
   type: "type2"
   with_labels: false
 
