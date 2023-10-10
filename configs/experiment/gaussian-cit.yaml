@@ -25,12 +25,11 @@ tau2:
 
 
 model:
-  _target_: "models.mlp.MLP"
-  input_size: 20
-  hidden_layer_size: [128] #[2, 2]
+  input_size: 21
+  hidden_layer_size: [128]
   layer_norm: true
   drop_out: true
-  drop_out_p: 0.5
+  drop_out_p: 0.3
   output_size: 1
   bias: true
 
@@ -41,11 +40,10 @@ data:
 
 
 train:
-  name: "ecrt"
   seed: 0
-  lr: 0.0005 #0.005
+  lr: 0.0005
   earlystopping:
-    patience: 10 #10
+    patience: 10
     delta: 0.0
   epochs: 500
   seqs: 50 # number of mini-batches

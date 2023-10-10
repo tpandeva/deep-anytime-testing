@@ -40,6 +40,7 @@ class MLP(nn.Module):
         Returns:
         - torch.Tensor: Processed tensor.
         """
+        if len(x.shape)>2: x = torch.flatten(x, start_dim=1)
         return self.model(x)
 
 

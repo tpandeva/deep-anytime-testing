@@ -13,7 +13,7 @@ class Cifar10Adversarial(DatasetOperator):
         super().__init__(tau1, tau2)
         self.images, labels = z
         self.z = self.images
-        self.images_adv = self.fgsm_attack(model, self.images.clone(), labels, torch.device('cpu'), epsilon)
+        self.images_adv = self.fgsm_attack(model, self.images.clone(), labels, epsilon)
         self.tau1_z = self.tau1(self.images)
         self.tau2_z = self.tau2(self.images_adv)
 
@@ -25,7 +25,8 @@ class Cifar10Adversarial(DatasetOperator):
         #     tau2_z = self.tau2(tau2_z[None,...]).squeeze()
         return tau1_z, tau2_z
 
-    def fgsm_attack(self, model, images, labels, device, epsilon):
+    def fgsm_attack(self, model, images, labels, epsilon):
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         criterion = torch.nn.CrossEntropyLoss()
         images.requires_grad_(True)
         outputs = model(images)

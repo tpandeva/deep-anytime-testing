@@ -187,16 +187,15 @@ class TrainerSC2ST(TrainerC2ST):
             # z = z.transpose(2, 1).flatten(0).view(2*samples,-1)[...,:-1]
             tau_z = tau_z.to(self.device)
             # tau_z = tau_z.transpose(2, 1).flatten(0).view(2*samples,-1)[...,-1]
-            num_pseudo_samples = tau_z.shape[0]
-            loss = 0
+            num_pseudo_samples = tau_z.shape[-1]
             for i in range(num_pseudo_samples):
                 self.net[i] = self.net[i].train() if mode == "train" else self.net[i].eval()
                 out1 = self.net[i](z)
                 out2 = self.net[i](tau_z[...,i])
-                out = torch.concat((out1, out2))
+                out = torch.concat((out1.clone(), out2.clone()))
                 labels = torch.concat((torch.ones((z.shape[0], 1)), torch.zeros((z.shape[0], 1)))).squeeze(1).long().to(
                 self.device)
-                loss += self.loss(out.clone(), labels)
+                loss = self.loss(out, labels)
                 if mode == "train":
                     self.optimizer.zero_grad()
                     loss.backward()
@@ -205,9 +204,12 @@ class TrainerSC2ST(TrainerC2ST):
                 aggregated_loss += loss
                 if mode == "test":
                     p_val, acc = self.s_c2st(labels, out.detach(), n_per=100)
+                    results_tb = self.testing_by_betting(labels, out.detach())
+                    tb_val_ons = results_tb[1]
+
                     self.log(
-                        {f"{mode}_e-value": e_val.item(), f"{mode}_p-value_{i}": p_val.item(),
-                         f"{mode}_accuracy": acc.item()
+                        {f"{mode}_p-value_{i}": p_val,
+                         f"{mode}_accuracy": acc
                         })
             self.log({ f"{mode}_loss": aggregated_loss.item() / num_samples })
         return aggregated_loss / (num_samples*num_pseudo_samples), tb_val_ons

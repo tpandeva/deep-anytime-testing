@@ -7,7 +7,6 @@ import torchvision
 from torchvision import transforms
 from operators import RandomRotateImgOperator
 
-
 class MnistRotDataset(DatasetOperator):
 
     def __init__(self, z, tau1, tau2):
@@ -67,4 +66,4 @@ class RotatedMnistDataGen(DataGenerator):
 
     def generate(self, seed, tau1, tau2) -> Dataset:
         ind = self.index_sets_seq[seed]
-        return MnistRotDataset(self.z[ind, :, :], tau1, tau2)
+        return MnistRotDataset(self.z[ind, ...], tau1, tau2)

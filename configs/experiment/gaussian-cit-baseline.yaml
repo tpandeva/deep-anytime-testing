@@ -1,7 +1,6 @@
 # @package _global_
 defaults:
-  - /data: blob
-  - /model: mlp
+  - /data: gaussiancit
   - /operator@tau1:
       - projection
   - /operator@tau2:
@@ -18,36 +17,41 @@ tau1:
 
 tau2:
   swap:
-    p: 2
+    p: 21
     d: 0
   projection:
     input_dim: 0
 
+
 model:
-  input_size: 2
-  hidden_layer_size: [30, 30]
+  _target_: "models.mlp.MLP"
+  input_size: 21
+  hidden_layer_size: [128]
   layer_norm: true
+  drop_out: true
+  drop_out_p: 0.3
+  output_size: 1
   bias: true
 
 data:
-  data_seed: 10
-  samples: 90
+  data_seed: 0
+  samples: 100
   type: "type2"
-  with_labels: false
 
 
 train:
+  name: "ecrt"
   seed: 0
   lr: 0.0005
   earlystopping:
     patience: 10
     delta: 0.0
   epochs: 500
-  seqs: 30 # number of mini-batches
+  seqs: 50 # number of mini-batches
   T: 0 #Warm start number of mini-batches used for the training only
   alpha: 0.05 # significance level
-  batch_size: 90
-  save: false
-  save_dir: ""
+  batch_size: 100
   l1_lambda: 0.0
   l2_lambda: 0.0
+  save: false
+  save_dir: ""

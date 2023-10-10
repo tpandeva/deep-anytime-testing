@@ -19,8 +19,8 @@ class TrainerECRT(Trainer):
         """Initializes the Trainer object with the provided configurations and parameters."""
         super().__init__(cfg, net, tau1, tau2, datagen, device, data_seed)
         self.loss = torch.nn.MSELoss(reduction='mean')
-        self.integral_vector = torch.tensor(np.linspace(0, 1, 1001, endpoint=False)[1:])
-        self.stb = [torch.ones(1000), torch.ones(1000), torch.ones(1000)]
+        self.integral_vector = torch.tensor(np.linspace(0, 1, 1001, endpoint=False)[1:]).to(device)
+        self.stb = [torch.ones(1000, device=device), torch.ones(1000, device=device), torch.ones(1000, device=device)]
 
     def ecrt(self,y,x, x_tilde, batches, mode):
         # iterate over batch sizes
@@ -40,15 +40,15 @@ class TrainerECRT(Trainer):
                 x_tb = x[ind]
                 x_tilde_tb = x_tilde[ind]
                 pred_tilde_tb = self.net(x_tilde_tb)
-                pred_tb = self.net(x_tb)
+                pred_tb = self.net(x_tb).detach()
                 q = test_stat(pred_tb.squeeze(), y_tb)
                 q_tilde = test_stat(pred_tilde_tb.squeeze(), y_tb)
                 wealth = torch.nn.Tanh()(q_tilde - q)
                 if mode=="test":
-                    self.stb[i] = self.stb[i]*(1 + self.integral_vector * wealth )
+                    self.stb[i] = self.stb[i].to(self.device)*(1 + self.integral_vector * wealth )
                     stb[i] =  self.stb[i].clone()
                 else:
-                    stb[i] = stb[i]*(1 + self.integral_vector * wealth )
+                    stb[i] = stb[i].to(self.device)*(1 + self.integral_vector * wealth )
 
             st.append(stb[i].mean())
             i += 1
