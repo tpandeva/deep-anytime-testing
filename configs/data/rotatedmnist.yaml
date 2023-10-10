@@ -3,3 +3,4 @@ samples: 1000
 type: "type2"
 p: 0.3
 data_seed: 0
+file_path: "data/rotatedmnist/"

@@ -46,9 +46,9 @@ class MLP(nn.Module):
 
 class MMDEMLP(MLP):
     """
-    MMDEMLP (Modified Mean Discrepancy MLP) is an extension of the base MLP (Multi-Layer Perceptron).
+    MMDEMLP  is an extension of the base MLP (Multi-Layer Perceptron).
 
-    This class takes in a configuration object `cfg` that specifies the parameters for the neural network.
+    This class requires a configuration object `cfg` to specify the neural network parameters.
     The forward method implements a custom operation over the outputs of the base MLP.
     """
 
@@ -56,40 +56,40 @@ class MMDEMLP(MLP):
         """
         Initializes the MMDEMLP object.
 
-        Parameters:
+        Args:
         - input_size (int): Size of input layer.
         - hidden_layer_size (int): Size of hidden layer.
         - output_size (int): Size of output layer.
-        - batch_norm (bool): Indicates if batch normalization should be applied.
-        - drop_out(bool): Indicates if dropout should be applied.
-        - drop_out_p (float): The probability of an element to be zeroed.
-        - bias (bool): Indicates if bias term would be added to the linear layer
-        - full_dim (bool): Indicates if the full dimension of the input should be used.
+        - layer_norm (bool): Indicates if layer normalization should be applied.
+        - drop_out (bool): Indicates if dropout should be applied.
+        - drop_out_p (float): The dropout probability, i.e., the probability of an element to be zeroed.
+        - bias (bool): If set to False, the layers will not learn an additive bias.
+        - flatten (bool): Determines if the input tensors should be flattened.
         """
 
-        # Initialize base MLP
+        # Initialize the base MLP
         super(MMDEMLP, self).__init__(input_size, hidden_layer_size, output_size, layer_norm, drop_out, drop_out_p, bias)
 
         # Activation function for the custom operation in the forward method
         self.sigma = torch.nn.Tanh()
         self.flatten = flatten
 
-
     def forward(self, x, y) -> torch.Tensor:
         """
         Forward pass for the MMDEMLP model. Computes the output based on inputs x and y.
 
-        Parameters:
+        Args:
         - x (torch.Tensor): First input tensor.
         - y (torch.Tensor): Second input tensor.
 
         Returns:
-        - output (torch.Tensor): The output of the forward pass.
+        - torch.Tensor: The output of the forward pass.
         """
 
-        # Compute the outputs from the base MLP model for x and y
-        if len(x.shape)>2 or len(y.shape)>2:
+        # If input tensors have more than two dimensions
+        if len(x.shape) > 2 or len(y.shape) > 2:
             if self.flatten:
+                # Flatten the tensors from dimension 1
                 x = torch.flatten(x, start_dim=1)
                 y = torch.flatten(y, start_dim=1)
                 g_x = self.model(x)
@@ -97,15 +97,16 @@ class MMDEMLP(MLP):
             else:
                 num_samples = x.shape[-1]
                 g_x, g_y = 0, 0
+                # Process each sample in the tensor
                 for i in range(num_samples):
-                    g_x += self.model(torch.flatten(x[...,i], start_dim=1))
-                    g_y += self.model(torch.flatten(y[...,i], start_dim=1))
+                    g_x += self.model(torch.flatten(x[..., i], start_dim=1))
+                    g_y += self.model(torch.flatten(y[..., i], start_dim=1))
         else:
+            # If tensors are two-dimensional
             g_x = self.model(x)
             g_y = self.model(y)
 
-
-        # Compute final output
+        # Compute the custom output based on the difference of outputs
         output = torch.log(1 + self.sigma(g_x - g_y))
 
         return output

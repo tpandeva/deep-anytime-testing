@@ -1,3 +1,0 @@
-_target_: "models.cnn.RotCNN"
-input_size: 1
-output_size: 1

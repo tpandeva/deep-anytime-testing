@@ -50,14 +50,36 @@ def sample_D_blobs(N, sigma_mx_2, r=3, d=2, rho=0.03, rs=None):
 # X, Y = sample_blobs_Q(N, sigma_mx_2)
 
 
-class BlobData(DatasetOperator): # TODO: the code works only for two dimensions (d=2)
-    def __init__(self, type, samples, r=3, d=2, rho=0.03, with_labels = False, seed = 0, tau1 = None, tau2 = None):
+class BlobData(DatasetOperator):
+    """
+    Dataset operator for generating multi-modal blob data.
+
+    This class is designed for generating blob data.
+    Note: Currently only supports 2-dimensional data (d=2).
+    """
+
+    def __init__(self, type, samples, r=3, d=2, rho=0.03, with_labels=False, seed=0, tau1=None, tau2=None):
+        """
+        Initialize the BlobData object.
+
+        Args:
+        - type (str): Specifies the type of dataset.
+        - samples (int): Number of samples in the dataset.
+        - r (int): A parameter for generating blob data.
+        - d (int): Dimensions of the data. Currently only supports 2.
+        - rho (float): Density parameter for generating blob data.
+        - with_labels (bool): Whether to add labels to the data.
+        - seed (int): Random seed
+        - tau1 (callable): Operator 1.
+        - tau2 (callable): Operator 2.
+        """
         super().__init__(tau1, tau2)
 
         sigma_mx_2_standard = np.array([[0.03, 0], [0, 0.03]])
-        sigma_mx_2 = np.zeros([r**d, 2, 2])
+        sigma_mx_2 = np.zeros([r ** d, 2, 2])
 
-        for i in range(r**d):
+        # Constructing the covariance matrix
+        for i in range(r ** d):
             sigma_mx_2[i] = sigma_mx_2_standard
             if i < 4:
                 sigma_mx_2[i][0, 1] = -0.02 - 0.002 * i
@@ -68,36 +90,72 @@ class BlobData(DatasetOperator): # TODO: the code works only for two dimensions 
             if i > 4:
                 sigma_mx_2[i][1, 0] = 0.02 + 0.002 * (i - 5)
                 sigma_mx_2[i][0, 1] = 0.02 + 0.002 * (i - 5)
+
+        # Sample blob data based on the type specified
         if type == "type2":
             X, Y = sample_D_blobs(samples, sigma_mx_2, r, d, rho, rs=seed)
-            X = torch.from_numpy(X)
-            Y = torch.from_numpy(Y)
         elif type == "type11":
             Z, _ = sample_D_blobs(samples, sigma_mx_2, rs=seed)
-            X = torch.from_numpy(Z)
-            Z, _ = sample_D_blobs(samples, sigma_mx_2, rs=10000*(seed + 1))
-            Y = torch.from_numpy(Z)
+            X = Z.copy()
+            Z, _ = sample_D_blobs(samples, sigma_mx_2, rs=10000 * (seed + 1))
+            Y = Z.copy()
         elif type == "type12":
             _, Z = sample_D_blobs(samples, sigma_mx_2, rs=seed)
-            X = torch.from_numpy(Z)
-            _, Z = sample_D_blobs(samples, sigma_mx_2, rs=10000*(seed + 1))
-            Y = torch.from_numpy(Z)
-        self.x = X.float()
-        self.y = Y.float()
+            X = Z.copy()
+            _, Z = sample_D_blobs(samples, sigma_mx_2, rs=10000 * (seed + 1))
+            Y = Z.copy()
+
+        # Convert numpy arrays to PyTorch tensors and store
+        self.x = torch.from_numpy(X).float()
+        self.y = torch.from_numpy(Y).float()
         self.z = torch.stack([self.x, self.y], dim=2)
+
+        # Optionally add labels to the data
         if with_labels:
-            self.x = torch.concat((X.float(), torch.ones((X.shape[0], 1))), dim=1)
-            self.y = torch.concat((Y.float(), torch.zeros((Y.shape[0], 1))), dim=1)
+            self.x = torch.concat((self.x, torch.ones((self.x.shape[0], 1))), dim=1)
+            self.y = torch.concat((self.y, torch.zeros((self.y.shape[0], 1))), dim=1)
             self.z = torch.concat((self.x, self.y))
             idx = torch.randperm(self.z.shape[0])
-            self.z  = self.z[idx]
-            self.z = torch.stack([self.z[:samples,:], self.z[samples:,:]], dim=2)
+            self.z = self.z[idx]
+            self.z = torch.stack([self.z[:samples, :], self.z[samples:, :]], dim=2)
 
 
 class BlobDataGen(DataGenerator):
+    """
+    Data generator for the BlobData dataset.
+
+    This class is responsible for preparing the blob-like dataset and generating subsets based on a given number of samples.
+    """
+
     def __init__(self, type, samples, data_seed, r, d, rho, with_labels):
+        """
+        Initialize the BlobDataGen object.
+
+        Args:
+        - type (str): Specifies the type of dataset.
+        - samples (int): Number of samples to generate.
+        - data_seed (int): Seed for random number generation.
+        - r (int): A parameter for generating blob data.
+        - d (int): Dimensions of the data. Currently only supports 2.
+        - rho (float): Density parameter for generating blob data.
+        - with_labels (bool): Whether to add labels to the data.
+        """
         super().__init__(type, samples, data_seed)
+
+        # Store parameters
         self.type, self.samples, self.data_seed, self.r, self.d, self.rho, self.with_labels = type, samples, data_seed, r, d, rho, with_labels
-    def generate(self, seed, tau1, tau2) ->Dataset:
-        return BlobData(self.type, self.samples,self.r, self.d,
-                        self.rho, self.with_labels, (self.data_seed+1)*100+seed, tau1, tau2)
+
+    def generate(self, seed, tau1, tau2) -> Dataset:
+        """
+        Generate a subset of the BlobData dataset.
+
+        Args:
+        - seed (int): Seed to determine which subset of the data to use.
+        - tau1 (callable): Operator 1.
+        - tau2 (callable): Operator 2.
+
+        Returns:
+        - Dataset: A subset of the BlobData dataset.
+        """
+        modified_seed = (self.data_seed + 1) * 100 + seed
+        return BlobData(self.type, self.samples, self.r, self.d, self.rho, self.with_labels, modified_seed, tau1, tau2)

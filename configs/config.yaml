@@ -1,4 +1,4 @@
 defaults:
-  - experiment: blob-two-sample
+  - experiment: ???
   - override hydra/job_logging: colorlog
   - override hydra/hydra_logging: colorlog
