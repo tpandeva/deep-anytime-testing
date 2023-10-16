@@ -67,11 +67,10 @@ class Trainer:
             logging.info(f"Seq: {self.current_seq}, Epoch: {self.current_epoch}, {key}: {value}")
 
     def l1_regularization(self):
-        """Computes the L1 regularization of the model."""
         l1_regularization = torch.tensor(0., requires_grad=True)
         for name, param in self.net.named_parameters():
             if 'bias' not in name:
-                l1_regularization += torch.norm(param, p=1)
+                l1_regularization = l1_regularization + torch.norm(param, p=1)
         return l1_regularization
 
     def train_evaluate_epoch(self, loader, mode="train"):
