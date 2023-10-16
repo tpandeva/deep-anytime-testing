@@ -34,9 +34,9 @@ tau2:
 
 data:
   samples: 16
-  type: "type11"
-  data_seed: 100
-  p: 0.5
+  type: "type2"
+  data_seed: 0
+  p: 0.3
 
 model:
   input_size: 784
@@ -44,6 +44,9 @@ model:
   drop_out: true
   drop_out_p: 0.5
   layer_norm: false
+  bias: true
+  flatten: false
+  output_size: 1
 
 train:
   seed: 0
@@ -52,10 +55,10 @@ train:
     patience: 5
     delta: 0.0
   epochs: 1000
-  seqs: 50 # number of mini-batches
+  seqs: 100 # number of mini-batches
   T: 0 #Warm start number of mini-batches used for the training only
   alpha: 0.05 # significance level
-  batch_size: 16
+  batch_size: 64
   save: false
   save_dir: ""
   l1_lambda: 0.01

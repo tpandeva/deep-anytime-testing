@@ -33,9 +33,6 @@ class RotatedMnistDataGen(DataGenerator):
         """
         super().__init__(type, samples, data_seed)
 
-        # Determine the rotation type and set the 'p' accordingly
-        if type in ["type12", "type11", "type2"]:
-            p = 0.5
 
         # Define transformations for the MNIST dataset
         transforms_MNIST = transforms.Compose(
@@ -47,7 +44,7 @@ class RotatedMnistDataGen(DataGenerator):
         )
 
         # Load the MNIST dataset
-        mnist = torchvision.datasets.MNIST(file_path, train=True, transform=transforms_MNIST, download=False)
+        mnist = torchvision.datasets.MNIST(file_path, train=True, transform=transforms_MNIST, download=True)
         loader = torch.utils.data.DataLoader(mnist, batch_size=len(mnist), shuffle=True)
         data = next(iter(loader))
 

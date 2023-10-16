@@ -43,6 +43,7 @@ model:
   drop_out_p: 0.5
   layer_norm: false
   output_size: 2
+  bias: true
 
 train:
   ps: 4
@@ -56,7 +57,7 @@ train:
   seqs: 50 # number of mini-batches
   T: 0 #Warm start number of mini-batches used for the training only
   alpha: 0.05 # significance level
-  batch_size: 16
+  batch_size: 64
   save: false
   save_dir: ""
   l1_lambda: 0.01
