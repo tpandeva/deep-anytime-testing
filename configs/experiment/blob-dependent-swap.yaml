@@ -1,0 +1,51 @@
+# @package _global_
+defaults:
+  - /data: blob
+  - /model: mlp
+  - /operator@tau2:
+      - swap
+
+
+
+project: "Test"
+
+
+tau1: null
+
+tau2:
+  swap:
+    p: 2
+    d: 0
+
+
+model:
+  input_size: 4
+  hidden_layer_size: [30, 30]
+  layer_norm: true
+  bias: true
+
+data:
+  _target_: "data.blob_dependent.BlobDataGen"
+  nu: 0.01
+  data_seed: 10
+  samples: 90
+  type: "type2"
+  with_labels: false
+
+
+
+train:
+  seed: 0
+  lr: 0.0005
+  earlystopping:
+    patience: 10
+    delta: 0.0
+  epochs: 500
+  seqs: 60 # number of mini-batches
+  T: 0 #Warm start number of mini-batches used for the training only
+  alpha: 0.05 # significance level
+  batch_size: 90
+  save: false
+  save_dir: ""
+  l1_lambda: 0.0
+  l2_lambda: 0.0
