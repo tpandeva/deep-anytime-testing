@@ -90,7 +90,7 @@ class TrainerC2ST(Trainer):
             unique_perms.add(tuple(np.random.choice(n, n, replace=False)))
         return list(unique_perms), k
 
-    def s_c2st(self, y, logits, n_per=100):
+    def s_c2st(self, y, logits, n_per=500):
         """
         Evaluate the permutation-based Two-Sample Test (TST) for given labels and logits.
 
@@ -115,7 +115,7 @@ class TrainerC2ST(Trainer):
         p_val = (np.sum(sorted_stats >= accuracy.item())+1) / (n_per+1)
 
         return p_val, accuracy
-    def l_c2st(self, y, logits, n_per=100):
+    def l_c2st(self, y, logits, n_per=500):
         """
         Evaluate the permutation-based Two-Sample Test (TST) for given labels and logits.
 
