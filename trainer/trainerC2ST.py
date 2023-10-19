@@ -112,9 +112,35 @@ class TrainerC2ST(Trainer):
             y_perm = y.clone()[ind]
             stats[r] = torch.sum(y_perm == y_hat) / y.shape[0]
         sorted_stats = np.sort(stats)
-        p_val = np.sum(sorted_stats > accuracy.item()) / n_per
+        p_val = (np.sum(sorted_stats >= accuracy.item())+1) / (n_per+1)
 
         return p_val, accuracy
+    def l_c2st(self, y, logits, n_per=100):
+        """
+        Evaluate the permutation-based Two-Sample Test (TST) for given labels and logits.
+
+        Args:
+        - y (torch.Tensor): Ground truth labels.
+        - logits (torch.Tensor): Model outputs before activation.
+        - n_per (int, optional): Number of permutations. Default is 100.
+
+        Returns:
+        - tuple: p-value and accuracy.
+        """
+        y_hat = torch.argmax(logits, dim=1)
+        logit = logits[:,1] - logits[:,0]
+        n= y.shape[0]
+        true_stat = logit[y == 1].mean() - logit[y == 0].mean()
+        stats = np.zeros(n_per)
+        permutations, n_per = self.first_k_unique_permutations(n, n_per)
+        for r in range(n_per):
+            ind = np.asarray(permutations[r])
+            logit_perm = logit.clone()[ind]
+            stats[r] = logit_perm[y == 1].mean() - logit_perm[y == 0].mean()
+        sorted_stats = np.sort(stats)
+        p_val = (np.sum(sorted_stats >= true_stat.item())+1) / (n_per+1)
+
+        return p_val
 
     def train_evaluate_epoch(self, loader, mode="train"):
         """
@@ -156,12 +182,14 @@ class TrainerC2ST(Trainer):
             if mode == "test":
                 e_val *= self.e_c2st(labels, out.detach())
                 p_val, acc = self.s_c2st(labels, out.detach())
+                l_val = self.l_c2st(labels, out.detach())
                 results_tb = self.testing_by_betting(labels, out.detach())
                 tb_val_ons *= results_tb[1]
 
                 self.log(
                     {f"{mode}_e-value": e_val.item(),
-                     f"{mode}_p-value": p_val.item(),
+                     f"{mode}_p-value-lc2st": l_val.item(),
+                     f"{mode}_p-value-sc2st": p_val.item(),
                      f"{mode}_tb-ons-value": tb_val_ons.item(),
                      })
 
