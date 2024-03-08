@@ -5,7 +5,7 @@ defaults:
   - /operator@tau1:
       - projection
       - reshape
-      - rotation
+      
   - /operator@tau2:
       - swap
       - projection
@@ -19,8 +19,6 @@ project: "Test"
 tau1:
   projection:
     input_dim: 0
-  rotation:
-    num_rotations: 4
 
 tau2:
   swap:
@@ -36,9 +34,10 @@ data:
   samples: 16
   type: "type2"
   data_seed: 0
-  p: 0.3
+  p: 0.4
 
 model:
+  _target_: "models.mlp.MMDEMNIST"
   input_size: 784
   hidden_layer_size: [128, 64]
   drop_out: true
@@ -54,12 +53,12 @@ train:
   earlystopping:
     patience: 5
     delta: 0.0
-  epochs: 1000
-  seqs: 100 # number of mini-batches
+  epochs: 500
+  seqs: 10 # number of mini-batches
   T: 0 #Warm start number of mini-batches used for the training only
   alpha: 0.05 # significance level
   batch_size: 64
   save: false
   save_dir: ""
-  l1_lambda: 0.01
-  l2_lambda: 0.01
+  l1_lambda: 0.005
+  l2_lambda: 0.005

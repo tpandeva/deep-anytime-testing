@@ -37,32 +37,35 @@ def train_pipeline(cfg: DictConfig):
     tau1 = transforms.Compose(tau1_list)
     tau2 = transforms.Compose(tau2_list)
 
-    if cfg.train.name=="deep":
+    if cfg.train.name == "deep":
         net = instantiate(cfg.model).to(device)
         print(net)
         wandb.watch(net)
         # initialize the trainer object and fit the network to the task
         trainer = TrainerC2ST(cfg.train, net, tau1, tau2, datagen, device, cfg.data.data_seed)
         trainer.train()
-    elif cfg.train.name=="ecrt":
+    elif cfg.train.name == "ecrt":
         net = instantiate(cfg.model).to(device)
         print(net)
         wandb.watch(net)
         # initialize the trainer object and fit the network to the task
         trainer = TrainerECRT(cfg.train, net, tau1, tau2, datagen, device, cfg.data.data_seed)
         trainer.train()
-    elif cfg.train.name=="mmd":
+    elif cfg.train.name == "mmd":
         x_all, y_all = None, None
         for r in range(cfg.train.seqs):
-            data = datagen.generate(r+1, tau1, tau2)
-            data_loader = DataLoader(data, batch_size = len(data), shuffle=True)
+            data = datagen.generate(r + 1, tau1, tau2)
+            data_loader = DataLoader(data, batch_size=len(data), shuffle=True)
             for i, (x, y) in enumerate(data_loader):
                 x_all = x if x_all is None else torch.cat((x_all, x), dim=0)
                 y_all = y if y_all is None else torch.cat((y_all, y), dim=0)
-                p_val = mmd_test_rbf(x_all, y_all, int(np.sqrt(len(x_all))))
-                wandb.log({"p_val": p_val, "running_seed": 100*(cfg.data.data_seed+1)+r+1}) # (self.data_seed+1)*100+seed
-                print(f"Batch {i}, p_val: {p_val}")
-    elif cfg.train.name=="rand":
+                p_val = mmd_test_rbf(x_all, y_all, int(np.sqrt(len(x_all))), cfg.train.bw)
+                wandb.log({"p_val": p_val,
+                           "running_seed": 100 * (cfg.data.data_seed + 1) + r + 1})
+                print(f"Batch {r}, p_val: {p_val}")
+                if p_val <= 0.05:
+                    wandb.log({"steps": r + 1})
+    elif cfg.train.name == "rand":
         nets = []
         for r in range(cfg.train.ps):
             net = instantiate(cfg.model).to(device)

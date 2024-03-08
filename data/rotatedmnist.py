@@ -7,6 +7,7 @@ import torchvision
 from torchvision import transforms
 from operators import RandomRotateImgOperator
 
+
 class MnistRotDataset(DatasetOperator):
 
     def __init__(self, z, tau1, tau2):
@@ -33,26 +34,36 @@ class RotatedMnistDataGen(DataGenerator):
         """
         super().__init__(type, samples, data_seed)
 
-
         # Define transformations for the MNIST dataset
-        transforms_MNIST = transforms.Compose(
+        transforms_MNIST180 = transforms.Compose(
             [
                 transforms.ToTensor(),
-                RandomRotateImgOperator([2 * torch.pi / r for r in [-4, 4, 2, 1]]),
+                RandomRotateImgOperator([90, 270]),
                 transforms.Normalize(mean=(0.1307,), std=(0.3081,))
+            ]
+        )
+        transforms_MNIST90 = transforms.Compose(
+            [
+                transforms.ToTensor(),
+
+                transforms.Normalize(mean=(0.1307,), std=(0.3081,)),
+                RandomRotateImgOperator([180, 360]),
             ]
         )
 
         # Load the MNIST dataset
-        mnist = torchvision.datasets.MNIST(file_path, train=True, transform=transforms_MNIST, download=True)
-        loader = torch.utils.data.DataLoader(mnist, batch_size=len(mnist), shuffle=True)
+        mnist = torchvision.datasets.MNIST(file_path, train=True, transform=transforms_MNIST180, download=False)
+        loader = torch.utils.data.DataLoader(mnist, batch_size=len(mnist), shuffle=False)
         data = next(iter(loader))
 
         # Split the data based on labels 6 and 9
         idx_test6 = data[1] == 6
         mnist6 = data[0][idx_test6]
 
-        idx_test9 = data[1] == 9
+        mnist = torchvision.datasets.MNIST(file_path, train=True, transform=transforms_MNIST90, download=False)
+        loader = torch.utils.data.DataLoader(mnist, batch_size=len(mnist), shuffle=False)
+        data = next(iter(loader))
+        idx_test9 = data[1] == 6
         mnist9 = data[0][idx_test9]
 
         # Ensure equal number of samples for both classes
@@ -62,17 +73,15 @@ class RotatedMnistDataGen(DataGenerator):
         p_size = int(p * num_samples)
 
         # Swap half of the images between the two classes
-        data6_ = mnist6[:p_size, :].clone()
         data9_ = mnist9[:p_size, :].clone()
         mnist6[:p_size, :] = data9_.clone()
-        mnist9[:p_size, :] = data6_.clone()
 
         # Shuffle the images
         idx6 = torch.randperm(mnist6.shape[0])
         mnist6 = mnist6[idx6, ...]
 
         idx9 = torch.randperm(mnist9.shape[0])
-        mnist9 = mnist9[idx9, ...]
+        mnist9 = mnist6[idx9, ...]
 
         # Flatten and store the image tensors
         self.X = 1.0 * torch.flatten(mnist6, 1)

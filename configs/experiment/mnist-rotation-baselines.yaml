@@ -60,5 +60,5 @@ train:
   batch_size: 64
   save: false
   save_dir: ""
-  l1_lambda: 0.01
-  l2_lambda: 0.01
+  l1_lambda: 0.005
+  l2_lambda: 0.005

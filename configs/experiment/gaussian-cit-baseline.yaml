@@ -25,7 +25,7 @@ tau2:
 
 model:
   _target_: "models.mlp.MLP"
-  input_size: 21
+  input_size: 20
   hidden_layer_size: [128]
   layer_norm: true
   drop_out: true

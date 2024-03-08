@@ -30,6 +30,7 @@ data:
 
 train:
   name: "deep"
+  bw: 1.0
   seed: 0
   lr: 0.0005
   earlystopping:
