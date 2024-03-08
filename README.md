@@ -12,7 +12,7 @@ We also recommend to install wandb for logging. See https://docs.wandb.ai/quicks
    
    **Blob Dataset**: The Blob dataset is a two-dimensional Gaussian mixture model with nine modes arranged on a 3 x 3 grid.  The two distributions differ in their variance as visualized in the figure below.
 
-    ![Blob Data](figures/blob_data.png)
+![Blob Data](figures/blob_data.png)
     
    **MNIST**: The MNIST dataset consists of hand-written digits.
 
@@ -131,3 +131,5 @@ If you want to run for several seeds use the run.ssh file.
 
 To retrieve the results from wandb use the prepared notebooks in the folder notebooks.
 
+5. Figures
+The figures are generated with the notebook Plot-DAVT.ipynb in the folder notebooks with the data stored in the figures/data folder. The figures are stored in the folder figures.
