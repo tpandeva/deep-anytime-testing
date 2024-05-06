@@ -35,14 +35,14 @@ class RotatedMnistDataGen(DataGenerator):
         super().__init__(type, samples, data_seed)
 
         # Define transformations for the MNIST dataset
-        transforms_MNIST180 = transforms.Compose(
+        transforms_MNIST90270 = transforms.Compose(
             [
                 transforms.ToTensor(),
                 RandomRotateImgOperator([90, 270]),
                 transforms.Normalize(mean=(0.1307,), std=(0.3081,))
             ]
         )
-        transforms_MNIST90 = transforms.Compose(
+        transforms_MNIST180360 = transforms.Compose(
             [
                 transforms.ToTensor(),
 
@@ -52,40 +52,40 @@ class RotatedMnistDataGen(DataGenerator):
         )
 
         # Load the MNIST dataset
-        mnist = torchvision.datasets.MNIST(file_path, train=True, transform=transforms_MNIST180, download=False)
+        mnist = torchvision.datasets.MNIST(file_path, train=True, transform=transforms_MNIST90270, download=False)
         loader = torch.utils.data.DataLoader(mnist, batch_size=len(mnist), shuffle=False)
         data = next(iter(loader))
 
         # Split the data based on labels 6 and 9
         idx_test6 = data[1] == 6
-        mnist6 = data[0][idx_test6]
+        mnist_rot1 = data[0][idx_test6]
 
-        mnist = torchvision.datasets.MNIST(file_path, train=True, transform=transforms_MNIST90, download=False)
+        mnist = torchvision.datasets.MNIST(file_path, train=True, transform=transforms_MNIST180360, download=False)
         loader = torch.utils.data.DataLoader(mnist, batch_size=len(mnist), shuffle=False)
         data = next(iter(loader))
-        idx_test9 = data[1] == 6
-        mnist9 = data[0][idx_test9]
+        idx_test6 = data[1] == 6
+        mnist_rot2 = data[0][idx_test6]
 
         # Ensure equal number of samples for both classes
-        num_samples = min(mnist9.shape[0], mnist6.shape[0])
-        mnist9 = mnist9[:num_samples]
-        mnist6 = mnist6[:num_samples]
+        num_samples = min(mnist_rot2.shape[0], mnist_rot1.shape[0])
+        mnist_rot2 = mnist_rot2[:num_samples]
+        mnist_rot1 = mnist_rot1[:num_samples]
         p_size = int(p * num_samples)
 
         # Swap half of the images between the two classes
-        data9_ = mnist9[:p_size, :].clone()
-        mnist6[:p_size, :] = data9_.clone()
+        d = mnist_rot2[:p_size, :].clone()
+        mnist_rot1[:p_size, :] = d.clone()
 
         # Shuffle the images
-        idx6 = torch.randperm(mnist6.shape[0])
-        mnist6 = mnist6[idx6, ...]
+        idx = torch.randperm(mnist_rot1.shape[0])
+        X = mnist_rot1[idx, ...]
 
-        idx9 = torch.randperm(mnist9.shape[0])
-        mnist9 = mnist6[idx9, ...]
+        idx = torch.randperm(mnist_rot1.shape[0])
+        Y = mnist_rot1[idx, ...]
 
         # Flatten and store the image tensors
-        self.X = 1.0 * torch.flatten(mnist6, 1)
-        self.Y = 1.0 * torch.flatten(mnist9, 1)
+        self.X = 1.0 * torch.flatten(X, 1)
+        self.Y = 1.0 * torch.flatten(Y, 1)
 
         # Create subsets based on the 'samples' parameter
         total_samples = min(self.X.shape[0], self.Y.shape[0])
